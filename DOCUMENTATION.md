@@ -223,6 +223,38 @@ On Windows systems, interfaces directly with the hardware motherboard timer spea
 - `akp_prompt_select(const char* title, const char* options[], int count)`:
   Interactive arrow-key selector. Users navigate using **Up ($\uparrow$)** / **Down ($\downarrow$)** keys or numeric shortcuts, highlighting the active option in Neon Pink (`► Option ◄`). Pressing **Enter** returns the selected index.
 
+### 3.13. Micro Unit-Testing Framework (`akp/test.h`)
+
+#### Functions & Macros:
+- `akp_test_suite_begin(name)`: Initializes a micro test suite with monotonic hardware execution timer.
+- `AKP_TEST(suite, name, condition)`: Evaluates a boolean assertion, emitting timestamped pass/fail badges with filename and line numbers.
+- `AKP_ASSERT_EQ(suite, name, actual, expected)`: Macro comparing equality (`==`).
+- `AKP_ASSERT_STR_EQ(suite, name, actual, expected)`: Macro comparing C strings (`strcmp() == 0`).
+- `akp_test_suite_end(&suite)`: Emits an audit summary with test counts, elapsed execution time in milliseconds, pass rate percentage, and triggers celebratory Mario audio on 100% pass!
+
+---
+
+### 3.14. 2D Geometric Terminal Canvas Engine (`akp/canvas.h`)
+
+#### Algorithms & Drawing Primitives:
+- `akp_canvas_create(width, height)`: Allocates an in-memory character and 24-bit TrueColor pixel buffer.
+- `akp_canvas_draw_line(...)`: Bresenham's Integer Line Drawing Algorithm.
+- `akp_canvas_draw_rect(...)`: Four-point boundary box rasterizer.
+- `akp_canvas_draw_circle(...)`: Midpoint Circle Drawing Algorithm.
+- `akp_canvas_draw_text(...)`: In-canvas text rendering with custom foreground colors.
+- `akp_canvas_render(title)`: Renders the entire 2D canvas enclosed in Unicode borders.
+
+---
+
+### 3.15. Modern C++17/20 STL & RAII Wrapper (`akp.hpp`)
+
+#### Classes & Streams:
+- `akp::neon_cyan`, `akp::neon_pink`, `akp::reset`: Modern `std::ostream` manipulators for stream output.
+- `akp::ScopedTimer`: RAII timer measuring execution block duration and printing benchmarks on destructor invocation.
+- `akp::Table`: Fluent C++ initializer-list builder (`table.addRow({ "A", "B" })`).
+- `akp::Canvas`: Object-oriented 2D canvas with RAII memory management.
+- `akp::sparkline(vector, label)`: Overloaded for `std::vector<double>`.
+
 ---
 
 ## 🚀 4. Package Manager & Installation Manual
