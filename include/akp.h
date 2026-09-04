@@ -7,7 +7,7 @@
  *  ██║  ██║██║ ╚██╗██║          ███████╗██║ ╚████║╚██████╔╝██║██║ ╚████║███████╗
  *  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝          ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝╚══════╝
  * ============================================================================
- *  🚀 AKP CORE ENGINE v1.0.0
+ *  🚀 AKP CORE ENGINE v1.1.0
  *  Author: Akshar Miyani
  *  Identity: AKP Studio / Advanced C & C++ Flashy Development Toolkit
  *  Zero-Dependency | Pure C99/C11 & C++11/14/17/20 Compatible | Cross-Platform
@@ -28,6 +28,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdarg.h>
 #include <time.h>
+#include <math.h>
 
 #if defined(_WIN32) || defined(_WIN64)
     #include <windows.h>
@@ -61,16 +62,6 @@ extern "C" {
 #define AKP_FG_MAGENTA  "\x1b[35m"
 #define AKP_FG_CYAN     "\x1b[36m"
 #define AKP_FG_WHITE    "\x1b[37m"
-
-/* Standard ANSI Background */
-#define AKP_BG_BLACK    "\x1b[40m"
-#define AKP_BG_RED      "\x1b[41m"
-#define AKP_BG_GREEN    "\x1b[42m"
-#define AKP_BG_YELLOW   "\x1b[43m"
-#define AKP_BG_BLUE     "\x1b[44m"
-#define AKP_BG_MAGENTA  "\x1b[45m"
-#define AKP_BG_CYAN     "\x1b[46m"
-#define AKP_BG_WHITE    "\x1b[47m"
 
 /* Cyberpunk Neon Palette (TrueColor 24-bit) */
 #define AKP_NEON_CYAN    "\x1b[38;2;0;255;234m"
@@ -153,7 +144,7 @@ static inline void akp_banner(void) {
     printf(AKP_NEON_CYAN "║" AKP_GOLD        "  ██║  ██║██║ ╚██╗██║         ███████╗██║ ╚████║╚██████╔╝██║██║ ╚████║███████╗ " AKP_NEON_CYAN "║\n" AKP_RESET);
     printf(AKP_NEON_CYAN "║" AKP_GOLD        "  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝         ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝╚══════╝ " AKP_NEON_CYAN "║\n" AKP_RESET);
     printf(AKP_NEON_CYAN "╠═══════════════════════════════════════════════════════════════════════════════╣\n" AKP_RESET);
-    printf(AKP_NEON_CYAN "║" AKP_BOLD AKP_NEON_YELLOW "        🚀 AKP CORE ENGINE v1.0.0  |  ENGINEERED BY: AKSHAR MIYANI              " AKP_NEON_CYAN "║\n" AKP_RESET);
+    printf(AKP_NEON_CYAN "║" AKP_BOLD AKP_NEON_YELLOW "        🚀 AKP CORE ENGINE v1.1.0  |  ENGINEERED BY: AKSHAR MIYANI              " AKP_NEON_CYAN "║\n" AKP_RESET);
     printf(AKP_NEON_CYAN "║" AKP_DIM AKP_NEON_CYAN       "        ⚡ Ultra-Flashy Terminal Output & High-Performance C/C++ Toolkit        " AKP_NEON_CYAN "║\n" AKP_RESET);
     printf(AKP_NEON_CYAN "╚═══════════════════════════════════════════════════════════════════════════════╝\n" AKP_RESET);
     printf("\n");
@@ -561,7 +552,118 @@ static inline void akp_print_matrix(const int* mat, int rows, int cols, const ch
 }
 
 /* ============================================================================
- * [10] INTERACTIVE PROMPTS
+ * [10] TERMINAL GRAPH & SPARKLINE PLOTTER
+ * ============================================================================ */
+
+static const char* AKP_SPARK_BLOCKS[] = { " ", "▂", "▃", "▄", "▅", "▆", "▇", "█" };
+
+static inline void akp_sparkline(const double* values, int count, const char* label) {
+    if (!values || count <= 0) return;
+    akp_init_console();
+    double min_val = values[0], max_val = values[0];
+    for (int i = 1; i < count; i++) {
+        if (values[i] < min_val) min_val = values[i];
+        if (values[i] > max_val) max_val = values[i];
+    }
+    double range = max_val - min_val;
+    if (range < 0.00001) range = 1.0;
+
+    printf(AKP_BOLD AKP_NEON_YELLOW "📈 %-20s " AKP_RESET "[ ", label ? label : "Sparkline");
+    for (int i = 0; i < count; i++) {
+        double norm = (values[i] - min_val) / range;
+        int level = (int)(norm * 7.99);
+        if (level < 0) level = 0;
+        if (level > 7) level = 7;
+        if (level >= 6) printf(AKP_NEON_PINK "%s" AKP_RESET, AKP_SPARK_BLOCKS[level]);
+        else if (level >= 3) printf(AKP_NEON_CYAN "%s" AKP_RESET, AKP_SPARK_BLOCKS[level]);
+        else printf(AKP_NEON_GREEN "%s" AKP_RESET, AKP_SPARK_BLOCKS[level]);
+    }
+    printf(" ] " AKP_DIM "(min: %.2f, max: %.2f)" AKP_RESET "\n", min_val, max_val);
+}
+
+static inline void akp_plot_curve(double (*func)(double), double x_min, double x_max, int width, int height, const char* title) {
+    if (!func || width <= 10 || height <= 5) return;
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "📐 [ Function Plot: %s ]" AKP_RESET "\n", title ? title : "f(x)");
+
+    double* y_vals = (double*)malloc(width * sizeof(double));
+    if (!y_vals) return;
+
+    double y_min = 1e9, y_max = -1e9;
+    for (int col = 0; col < width; col++) {
+        double x = x_min + ((double)col / (width - 1)) * (x_max - x_min);
+        y_vals[col] = func(x);
+        if (y_vals[col] < y_min) y_min = y_vals[col];
+        if (y_vals[col] > y_max) y_max = y_vals[col];
+    }
+    double y_range = y_max - y_min;
+    if (y_range < 0.00001) y_range = 1.0;
+
+    for (int row = height - 1; row >= 0; row--) {
+        double cur_y = y_min + ((double)row / (height - 1)) * y_range;
+        printf(AKP_DIM "%7.2f │ " AKP_RESET, cur_y);
+        for (int col = 0; col < width; col++) {
+            int target_row = (int)(((y_vals[col] - y_min) / y_range) * (height - 1) + 0.5);
+            if (target_row == row) printf(AKP_BOLD AKP_NEON_PINK "●" AKP_RESET);
+            else if (row == (int)((-y_min / y_range) * (height - 1) + 0.5)) printf(AKP_DIM "─" AKP_RESET);
+            else printf(" ");
+        }
+        printf("\n");
+    }
+    printf("        └");
+    for (int col = 0; col < width; col++) printf("─");
+    printf("► (x)\n");
+    printf("         %-8.2f%*s%8.2f\n\n", x_min, width - 16, "", x_max);
+    free(y_vals);
+}
+
+/* ============================================================================
+ * [11] BINARY TREE HIERARCHY VISUALIZER
+ * ============================================================================ */
+
+typedef struct akp_tree_node {
+    int value;
+    const char* label;
+    struct akp_tree_node* left;
+    struct akp_tree_node* right;
+} akp_tree_node_t;
+
+static inline akp_tree_node_t* akp_tree_create_node(int val, const char* label) {
+    akp_tree_node_t* n = (akp_tree_node_t*)malloc(sizeof(akp_tree_node_t));
+    if (!n) return NULL;
+    n->value = val;
+    n->label = label;
+    n->left = NULL;
+    n->right = NULL;
+    return n;
+}
+
+static inline void akp_tree_print_internal(const akp_tree_node_t* node, const char* prefix, bool is_left, bool is_root) {
+    if (!node) return;
+    char right_prefix[256];
+    snprintf(right_prefix, sizeof(right_prefix), "%s%s", prefix, is_left ? "│   " : "    ");
+    akp_tree_print_internal(node->right, right_prefix, false, false);
+
+    printf("%s", prefix);
+    if (!is_root) printf(AKP_NEON_CYAN "%s" AKP_RESET, is_left ? "└── " : "┌── ");
+    if (node->label) printf(AKP_BOLD AKP_NEON_YELLOW "[%d: %s]" AKP_RESET "\n", node->value, node->label);
+    else printf(AKP_BOLD AKP_NEON_GREEN "[%d]" AKP_RESET "\n", node->value);
+
+    char left_prefix[256];
+    snprintf(left_prefix, sizeof(left_prefix), "%s%s", prefix, is_left ? "    " : "│   ");
+    akp_tree_print_internal(node->left, left_prefix, true, false);
+}
+
+static inline void akp_tree_print(const akp_tree_node_t* root, const char* title) {
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_PURPLE "🌳 [ Binary Tree Hierarchy: %s ]" AKP_RESET "\n\n", title ? title : "Root");
+    if (!root) { printf(AKP_DIM "    (Empty Tree)\n" AKP_RESET); return; }
+    akp_tree_print_internal(root, "    ", false, true);
+    printf("\n");
+}
+
+/* ============================================================================
+ * [12] INTERACTIVE PROMPTS & SELECTORS
  * ============================================================================ */
 
 static inline bool akp_prompt_confirm(const char* question) {
@@ -621,6 +723,52 @@ static inline void akp_prompt_password(const char* prompt, char* buffer, size_t 
     buffer[idx] = '\0';
     printf("\n");
 #endif
+}
+
+static inline int akp_prompt_select(const char* title, const char* options[], int count) {
+    if (!options || count <= 0) return -1;
+    akp_init_console();
+
+    int selected = 0;
+    bool active = true;
+
+    while (active) {
+        printf("\r" AKP_BOLD AKP_NEON_CYAN "🎯 %s (Use ↑/↓ or 1-%d, Enter to pick):" AKP_RESET "\n", 
+               title ? title : "Select Option", count);
+        
+        for (int i = 0; i < count; i++) {
+            if (i == selected) printf(AKP_BOLD AKP_NEON_PINK "  ► [%d] %-30s ◄" AKP_RESET "\n", i + 1, options[i]);
+            else printf(AKP_DIM "    [%d] %-30s  " AKP_RESET "\n", i + 1, options[i]);
+        }
+
+#if AKP_PLATFORM_WINDOWS
+        int ch = _getch();
+        if (ch == 224 || ch == 0) {
+            int code = _getch();
+            if (code == 72) selected = (selected - 1 + count) % count;
+            else if (code == 80) selected = (selected + 1) % count;
+        } else if (ch == '\r' || ch == '\n') active = false;
+        else if (ch >= '1' && ch < '1' + count) { selected = ch - '1'; active = false; }
+#else
+        struct termios oldt, newt;
+        tcgetattr(STDIN_FILENO, &oldt);
+        newt = oldt;
+        newt.c_lflag &= ~(ICANON | ECHO);
+        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+        int ch = getchar();
+        if (ch == '\033') {
+            getchar(); int arrow = getchar();
+            if (arrow == 'A') selected = (selected - 1 + count) % count;
+            if (arrow == 'B') selected = (selected + 1) % count;
+        } else if (ch == '\n' || ch == '\r') active = false;
+        else if (ch >= '1' && ch < '1' + count) { selected = ch - '1'; active = false; }
+        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+#endif
+        if (active) printf("\x1b[%dA", count + 1);
+    }
+
+    printf(AKP_BOLD AKP_NEON_GREEN "✔ Selected: %s" AKP_RESET "\n\n", options[selected]);
+    return selected;
 }
 
 #ifdef __cplusplus

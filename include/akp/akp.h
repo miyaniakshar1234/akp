@@ -18,5 +18,7 @@
 #include "sound.h"
 #include "dsa.h"
 #include "prompt.h"
+#include "plot.h"
+#include "tree.h"
 
 #endif /* AKP_MODULAR_ROOT_H */
