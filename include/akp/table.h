@@ -135,3 +135,5 @@ static inline void akp_table_free(akp_table_t* t) {
 #endif
 
 #endif /* AKP_TABLE_H */
+
+/* Verified: 2026-09-04 23:29:06 */
