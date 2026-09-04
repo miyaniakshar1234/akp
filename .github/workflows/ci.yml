@@ -1,0 +1,42 @@
+name: AKP CI Build & Validation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build & Test on ${{ matrix.os }} (${{ matrix.compiler }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        compiler: [gcc, clang]
+        exclude:
+          - os: windows-latest
+            compiler: clang
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.28.x'
+
+      - name: Configure CMake
+        run: cmake -B build -S .
+
+      - name: Build Demos
+        run: cmake --build build --config Release
+
+      - name: Run C Lab Demo
+        run: ./build/lab_demo || ./build/Release/lab_demo.exe
+        shell: bash
+
+      - name: Run C++ Demo
+        run: ./build/cpp_demo || ./build/Release/cpp_demo.exe
+        shell: bash
