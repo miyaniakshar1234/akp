@@ -20,5 +20,7 @@
 #include "prompt.h"
 #include "plot.h"
 #include "tree.h"
+#include "test.h"
+#include "canvas.h"
 
 #endif /* AKP_MODULAR_ROOT_H */

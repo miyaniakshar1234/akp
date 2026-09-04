@@ -40,7 +40,12 @@ Standard C (`<stdio.h>`) outputs plain, black-and-white text. **`AKP`** turns yo
 - ⏱️ **Micro-Benchmark Timer**: Microsecond/nanosecond block execution timers (`AKP_BENCHMARK("Quicksort") { ... }`).
 - 🔊 **Retro Audio Effects**: Mario 8-bit coin chime, victory fanfare, and alert buzzers using hardware frequencies.
 - 📈 **DSA & Matrix Visualizers**: Horizontal in-terminal bar charts with selected element highlights and color-bracketed matrices.
-- ❓ **Interactive CLI Prompts**: Single-key confirmations (`[y/N]`), masked password input (`••••••`), and select menus.
+- 🌳 **Hierarchical Binary Tree Visualizer**: Horizontal branch layout (`┌──`, `│`, `└──`) for binary search trees and heaps.
+- 📐 **2D Function Plotter & Sparklines**: Rasterizes mathematical functions, complexity curves, and 8-level Unicode sparklines (` ▂▃▄▅▆▇█`).
+- 🎨 **2D Geometric Terminal Canvas**: In-terminal vector canvas drawing lines (Bresenham's algorithm), rectangles, circles, and text.
+- 🧪 **Micro Unit-Testing Framework**: Macro-based test suite (`AKP_TEST`, `AKP_ASSERT_EQ`) with pass-rate audits and Mario success chimes.
+- ⚡ **Modern C++17/20 STL & RAII Wrapper**: Scoped benchmark timers, stream color manipulators, and fluent builder classes via `include/akp.hpp`.
+- ❓ **Interactive CLI Prompts**: Arrow-key menu selector (`akp_prompt_select`), single-key confirmations (`[y/N]`), and masked password inputs (`••••••`).
 
 ---
 
