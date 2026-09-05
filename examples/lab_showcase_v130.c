@@ -40,8 +40,7 @@ int main(void) {
     akp_mat_free(B);
     akp_mat_free(C);
 
-    /* 6. Conclusion & Victory Fanfare */
-    akp_sound_success();
+    /* 6. Conclusion */
     akp_log_success("AKP Engine v1.3.0 Demonstration completed! Engineered by Akshar Miyani.");
 
     return 0;

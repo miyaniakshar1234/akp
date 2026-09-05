@@ -7,7 +7,7 @@
  *  ██║  ██║██║ ╚██╗██║          ███████╗██║ ╚████║╚██████╔╝██║██║ ╚████║███████╗
  *  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝          ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝╚══════╝
  * ============================================================================
- *  🚀 AKP CORE ENGINE v1.3.0
+ *  🚀 AKP CORE ENGINE v1.4.0 (Silent Audio Default)
  *  Author: Akshar Miyani
  *  Identity: AKP Studio / Advanced C & C++ Flashy Development Toolkit
  *  Zero-Dependency | Pure C99/C11 & C++11/14/17/20 Compatible | Cross-Platform
@@ -80,8 +80,14 @@ extern "C" {
 #define AKP_NEON_GREEN   "\x1b[38;2;57;255;20m"
 #define AKP_NEON_YELLOW  "\x1b[38;2;255;231;0m"
 #define AKP_GOLD         "\x1b[38;2;255;184;0m"
+#define AKP_NEON_GOLD    AKP_GOLD
+#define AKP_NEON_RED     "\x1b[38;2;255;50;50m"
 #define AKP_FIRE_ORANGE  "\x1b[38;2;255;94;0m"
 #define AKP_DEEP_BLUE    "\x1b[38;2;0;102;255m"
+
+static inline void akp_reset_color(void) {
+    printf(AKP_RESET);
+}
 
 typedef struct {
     uint8_t r;
@@ -154,7 +160,7 @@ static inline void akp_banner(void) {
     printf(AKP_NEON_CYAN "║" AKP_GOLD        "  ██║  ██║██║ ╚██╗██║         ███████╗██║ ╚████║╚██████╔╝██║██║ ╚████║███████╗ " AKP_NEON_CYAN "║\n" AKP_RESET);
     printf(AKP_NEON_CYAN "║" AKP_GOLD        "  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝         ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝╚══════╝ " AKP_NEON_CYAN "║\n" AKP_RESET);
     printf(AKP_NEON_CYAN "╠═══════════════════════════════════════════════════════════════════════════════╣\n" AKP_RESET);
-    printf(AKP_NEON_CYAN "║" AKP_BOLD AKP_NEON_YELLOW "        🚀 AKP CORE ENGINE v1.3.0  |  ENGINEERED BY: AKSHAR MIYANI              " AKP_NEON_CYAN "║\n" AKP_RESET);
+    printf(AKP_NEON_CYAN "║" AKP_BOLD AKP_NEON_YELLOW "        🚀 AKP CORE ENGINE v1.4.0  |  ENGINEERED BY: AKSHAR MIYANI              " AKP_NEON_CYAN "║\n" AKP_RESET);
     printf(AKP_NEON_CYAN "║" AKP_DIM AKP_NEON_CYAN       "        ⚡ Ultra-Flashy Terminal Output & High-Performance C/C++ Toolkit        " AKP_NEON_CYAN "║\n" AKP_RESET);
     printf(AKP_NEON_CYAN "╚═══════════════════════════════════════════════════════════════════════════════╝\n" AKP_RESET);
     printf("\n");
@@ -503,37 +509,65 @@ static inline double akp_timer_stop_ms(akp_timer_t* t) {
 #define AKP_NOTE_B5  988
 #define AKP_NOTE_C6  1046
 
+/* Silent Audio Engine: 0dB by default to eliminate lab/classroom disruption.
+   Define AKP_ENABLE_AUDIO_HARDWARE only if motherboard speaker beeps are explicitly requested. */
+#ifdef AKP_ENABLE_AUDIO_HARDWARE
+  #define AKP_SOUND_ENABLED 1
+#else
+  #define AKP_SOUND_ENABLED 0
+#endif
+
+static inline void akp_beep(int freq_hz, int duration_ms) {
+#if AKP_SOUND_ENABLED
+  #if AKP_PLATFORM_WINDOWS
+    if (freq_hz > 0) Beep(freq_hz, duration_ms);
+  #else
+    printf("\a"); fflush(stdout);
+  #endif
+#else
+    (void)freq_hz; (void)duration_ms; /* Silent mode */
+#endif
+}
+
 static inline void akp_sound_coin(void) {
+#if AKP_SOUND_ENABLED
 #if AKP_PLATFORM_WINDOWS
     Beep(988, 100); Beep(1319, 250);
 #else
     printf("\a"); fflush(stdout);
 #endif
+#endif
 }
 
 static inline void akp_sound_success(void) {
+#if AKP_SOUND_ENABLED
 #if AKP_PLATFORM_WINDOWS
     Beep(523, 100); Beep(659, 100); Beep(784, 150); Beep(1046, 250);
 #else
     printf("\a"); fflush(stdout);
 #endif
+#endif
 }
 
 static inline void akp_sound_alert(void) {
+#if AKP_SOUND_ENABLED
 #if AKP_PLATFORM_WINDOWS
     Beep(440, 200); Beep(330, 250);
 #else
     printf("\a"); fflush(stdout);
 #endif
+#endif
 }
 
 static inline void akp_melody_tetris(void) {
+#if AKP_SOUND_ENABLED
     int notes[] = { AKP_NOTE_E5, AKP_NOTE_B4, AKP_NOTE_C5, AKP_NOTE_D5, AKP_NOTE_C5, AKP_NOTE_B4, AKP_NOTE_A4, AKP_NOTE_A4, AKP_NOTE_C5, AKP_NOTE_E5 };
     int durs[]  = { 250, 125, 125, 250, 125, 125, 250, 125, 125, 250 };
 #if AKP_OS_WIN
     for (size_t i = 0; i < sizeof(notes)/sizeof(notes[0]); i++) Beep(notes[i], durs[i]);
 #else
     printf("\a"); fflush(stdout);
+#endif
 #endif
 }
 
@@ -1102,6 +1136,414 @@ static inline void akp_mat_render(const akp_mat_t* m, const char* title) {
 
 static inline void akp_mat_free(akp_mat_t* m) {
     if (m) { if (m->data) free(m->data); free(m); }
+}
+
+/* ============================================================================
+ * [21] VISUAL LIFO STACK & CIRCULAR QUEUE
+ * ============================================================================ */
+
+typedef struct {
+    int* data;
+    int top;
+    int capacity;
+    char name[32];
+} akp_stack_t;
+
+static inline akp_stack_t* akp_stack_create(int capacity, const char* name) {
+    akp_init_console();
+    if (capacity <= 0) capacity = 8;
+    akp_stack_t* s = (akp_stack_t*)malloc(sizeof(akp_stack_t));
+    if (!s) return NULL;
+    s->data = (int*)malloc(sizeof(int) * capacity);
+    s->top = -1;
+    s->capacity = capacity;
+    strncpy(s->name, name ? name : "Stack", sizeof(s->name) - 1);
+    s->name[sizeof(s->name) - 1] = '\0';
+    return s;
+}
+
+static inline void akp_stack_free(akp_stack_t* s) {
+    if (!s) return;
+    if (s->data) free(s->data);
+    free(s);
+}
+
+static inline int akp_stack_is_empty(const akp_stack_t* s) {
+    return (s == NULL || s->top < 0);
+}
+
+static inline int akp_stack_is_full(const akp_stack_t* s) {
+    return (s != NULL && s->top >= s->capacity - 1);
+}
+
+static inline int akp_stack_push(akp_stack_t* s, int value) {
+    if (!s) return 0;
+    if (akp_stack_is_full(s)) {
+        akp_log_error("STACK", "Stack Overflow! Cannot push element.");
+        return 0;
+    }
+    s->top++;
+    s->data[s->top] = value;
+    return 1;
+}
+
+static inline int akp_stack_pop(akp_stack_t* s, int* out_value) {
+    if (!s || akp_stack_is_empty(s)) {
+        akp_log_error("STACK", "Stack Underflow! Stack is currently empty.");
+        return 0;
+    }
+    if (out_value) *out_value = s->data[s->top];
+    s->top--;
+    return 1;
+}
+
+static inline void akp_stack_render(const akp_stack_t* s) {
+    if (!s) return;
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "┌────────────────────────────────────────────────────────┐\n" AKP_RESET);
+    printf(AKP_BOLD AKP_NEON_CYAN "│ 📦 VISUAL STACK (LIFO): %-31s│\n" AKP_RESET, s->name);
+    printf(AKP_BOLD AKP_NEON_CYAN "├────────────────────────────────────────────────────────┤\n" AKP_RESET);
+    if (s->top < 0) {
+        printf(AKP_BOLD AKP_DIM "│  [ STACK IS CURRENTLY EMPTY (TOP = -1) ]               │\n" AKP_RESET);
+    } else {
+        for (int i = s->top; i >= 0; i--) {
+            const char* tag = (i == s->top) ? "TOP ->" : (i == 0 ? "BOT ->" : "      ");
+            const char* col = (i == s->top) ? AKP_NEON_GOLD : AKP_NEON_CYAN;
+            printf(AKP_BOLD "│   %s %s│ %6d │%s  (index: %2d)                     │\n" AKP_RESET,
+                   tag, col, s->data[i], AKP_RESET, i);
+            if (i > 0) printf(AKP_BOLD AKP_DIM "│          ├──--------──┤                                │\n" AKP_RESET);
+        }
+    }
+    printf(AKP_BOLD AKP_NEON_CYAN "├────────────────────────────────────────────────────────┤\n" AKP_RESET);
+    int pct = (s->capacity > 0) ? ((s->top + 1) * 100) / s->capacity : 0;
+    int filled_bars = (pct * 20) / 100;
+    printf(AKP_BOLD "│  Load: [" AKP_NEON_GREEN);
+    for (int b = 0; b < 20; b++) {
+        if (b < filled_bars) printf("█");
+        else printf(AKP_DIM "░" AKP_RESET AKP_BOLD);
+    }
+    printf(AKP_RESET AKP_BOLD "] %3d%% (%d/%d elements)       │\n" AKP_RESET, pct, s->top + 1, s->capacity);
+    printf(AKP_BOLD AKP_NEON_CYAN "└────────────────────────────────────────────────────────┘\n\n" AKP_RESET);
+}
+
+typedef struct {
+    int* data;
+    int front;
+    int rear;
+    int size;
+    int capacity;
+    char name[32];
+} akp_queue_t;
+
+static inline akp_queue_t* akp_queue_create(int capacity, const char* name) {
+    akp_init_console();
+    if (capacity <= 0) capacity = 6;
+    akp_queue_t* q = (akp_queue_t*)malloc(sizeof(akp_queue_t));
+    if (!q) return NULL;
+    q->data = (int*)malloc(sizeof(int) * capacity);
+    q->front = 0;
+    q->rear = -1;
+    q->size = 0;
+    q->capacity = capacity;
+    strncpy(q->name, name ? name : "CircularQueue", sizeof(q->name) - 1);
+    q->name[sizeof(q->name) - 1] = '\0';
+    return q;
+}
+
+static inline void akp_queue_free(akp_queue_t* q) {
+    if (!q) return;
+    if (q->data) free(q->data);
+    free(q);
+}
+
+static inline int akp_queue_is_empty(const akp_queue_t* q) {
+    return (q == NULL || q->size == 0);
+}
+
+static inline int akp_queue_is_full(const akp_queue_t* q) {
+    return (q != NULL && q->size >= q->capacity);
+}
+
+static inline int akp_queue_enqueue(akp_queue_t* q, int value) {
+    if (!q) return 0;
+    if (akp_queue_is_full(q)) {
+        akp_log_error("QUEUE", "Queue Overflow! Queue is full.");
+        return 0;
+    }
+    q->rear = (q->rear + 1) % q->capacity;
+    q->data[q->rear] = value;
+    q->size++;
+    return 1;
+}
+
+static inline int akp_queue_dequeue(akp_queue_t* q, int* out_value) {
+    if (!q || akp_queue_is_empty(q)) {
+        akp_log_error("QUEUE", "Queue Underflow! Queue is currently empty.");
+        return 0;
+    }
+    if (out_value) *out_value = q->data[q->front];
+    q->front = (q->front + 1) % q->capacity;
+    q->size--;
+    return 1;
+}
+
+static inline void akp_queue_render(const akp_queue_t* q) {
+    if (!q) return;
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_PINK "┌────────────────────────────────────────────────────────┐\n" AKP_RESET);
+    printf(AKP_BOLD AKP_NEON_PINK "│ 🔄 CIRCULAR QUEUE (FIFO): %-29s│\n" AKP_RESET, q->name);
+    printf(AKP_BOLD AKP_NEON_PINK "├────────────────────────────────────────────────────────┤\n" AKP_RESET);
+    printf("│  Slots: ");
+    for (int i = 0; i < q->capacity; i++) {
+        int occupied = 0;
+        if (q->size > 0) {
+            if (q->front <= q->rear) occupied = (i >= q->front && i <= q->rear);
+            else occupied = (i >= q->front || i <= q->rear);
+        }
+        if (occupied) printf(AKP_BOLD AKP_NEON_CYAN "[%4d] " AKP_RESET, q->data[i]);
+        else printf(AKP_DIM "[  -- ] " AKP_RESET);
+    }
+    printf("│\n│         ");
+    for (int i = 0; i < q->capacity; i++) {
+        int is_front = (q->size > 0 && i == q->front);
+        int is_rear  = (q->size > 0 && i == q->rear);
+        if (is_front && is_rear) printf(AKP_BOLD AKP_NEON_GOLD " F,R   " AKP_RESET);
+        else if (is_front) printf(AKP_BOLD AKP_NEON_GREEN "  F    " AKP_RESET);
+        else if (is_rear) printf(AKP_BOLD AKP_NEON_PINK "  R    " AKP_RESET);
+        else printf("       ");
+    }
+    printf("│\n" AKP_BOLD AKP_NEON_PINK "├────────────────────────────────────────────────────────┤\n" AKP_RESET);
+    printf(AKP_BOLD "│  Front: %2d  |  Rear: %2d  |  Size: %2d / %2d (Capacity)     │\n" AKP_RESET,
+           q->front, q->rear, q->size, q->capacity);
+    printf(AKP_BOLD AKP_NEON_PINK "└────────────────────────────────────────────────────────┘\n\n" AKP_RESET);
+}
+
+/* ============================================================================
+ * [22] VISUAL LINEAR & BINARY SEARCH ALGORITHMS
+ * ============================================================================ */
+
+static inline int akp_search_linear(const int* arr, int n, int target) {
+    if (!arr || n <= 0) return -1;
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "🔍 INITIATING LINEAR SEARCH FOR TARGET: [%d]\n" AKP_RESET, target);
+    printf(AKP_DIM "--------------------------------------------------------\n" AKP_RESET);
+    int comparisons = 0;
+    for (int i = 0; i < n; i++) {
+        comparisons++;
+        int match = (arr[i] == target);
+        printf("  Step %2d: [Index %2d] Value = %4d  ", comparisons, i, arr[i]);
+        if (match) {
+            printf(AKP_BOLD AKP_NEON_GREEN "== TARGET -> MATCH FOUND! ✨\n" AKP_RESET);
+            printf(AKP_BOLD AKP_NEON_GREEN "✔ Target [%d] located at Index %d in %d comparisons (Time: O(N))\n\n" AKP_RESET,
+                   target, i, comparisons);
+            return i;
+        } else {
+            printf(AKP_DIM "!= TARGET -> Continue Scanning\n" AKP_RESET);
+        }
+    }
+    printf(AKP_BOLD AKP_NEON_RED "✖ Target [%d] not found after %d comparisons.\n\n" AKP_RESET, target, comparisons);
+    return -1;
+}
+
+static inline int akp_search_binary(const int* arr, int n, int target) {
+    if (!arr || n <= 0) return -1;
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_PINK "⚡ INITIATING VISUAL BINARY SEARCH FOR TARGET: [%d]\n" AKP_RESET, target);
+    printf(AKP_DIM "--------------------------------------------------------------------------------\n" AKP_RESET);
+    int low = 0, high = n - 1, step = 0;
+    while (low <= high) {
+        step++;
+        int mid = low + (high - low) / 2;
+        printf(AKP_BOLD "  [Step %d] Low: %2d (val: %3d) | Mid: %2d (val: " AKP_NEON_GOLD "%3d" AKP_RESET AKP_BOLD ") | High: %2d (val: %3d)\n" AKP_RESET,
+               step, low, arr[low], mid, arr[mid], high, arr[high]);
+        printf("   Window: ");
+        for (int i = 0; i < n; i++) {
+            if (i == mid) printf(AKP_BOLD AKP_NEON_GOLD "[%3d]* " AKP_RESET, arr[i]);
+            else if (i >= low && i <= high) printf(AKP_BOLD AKP_NEON_CYAN "[%3d]  " AKP_RESET, arr[i]);
+            else printf(AKP_DIM "[ . ]  " AKP_RESET);
+        }
+        printf("\n");
+        if (arr[mid] == target) {
+            printf(AKP_BOLD AKP_NEON_GREEN "   ↳ MATCH! Element arr[%d] == %d matches target!\n" AKP_RESET, mid, target);
+            printf(AKP_BOLD AKP_NEON_GREEN "✨ TARGET FOUND at Index %d in only %d steps! (Complexity: O(log N))\n\n" AKP_RESET,
+                   mid, step);
+            return mid;
+        } else if (arr[mid] < target) {
+            printf(AKP_DIM "   ↳ arr[%d] (%d) < Target (%d) -> Discard Left, Search Right: [%d..%d]\n\n" AKP_RESET,
+                   mid, arr[mid], target, mid + 1, high);
+            low = mid + 1;
+        } else {
+            printf(AKP_DIM "   ↳ arr[%d] (%d) > Target (%d) -> Discard Right, Search Left: [%d..%d]\n\n" AKP_RESET,
+                   mid, arr[mid], target, low, mid - 1);
+            high = mid - 1;
+        }
+    }
+    printf(AKP_BOLD AKP_NEON_RED "✖ Target [%d] not present in array after %d steps.\n\n" AKP_RESET, target, step);
+    return -1;
+}
+
+/* ============================================================================
+ * [23] GRAPH TOPOLOGY & ADJACENCY MATRIX
+ * ============================================================================ */
+
+#define AKP_GRAPH_MAX_VERTICES 32
+
+typedef struct {
+    int vertices;
+    int is_directed;
+    int adj[AKP_GRAPH_MAX_VERTICES][AKP_GRAPH_MAX_VERTICES];
+} akp_graph_t;
+
+static inline akp_graph_t* akp_graph_create(int vertices, int is_directed) {
+    akp_init_console();
+    if (vertices > AKP_GRAPH_MAX_VERTICES) vertices = AKP_GRAPH_MAX_VERTICES;
+    if (vertices <= 0) vertices = 4;
+    akp_graph_t* g = (akp_graph_t*)malloc(sizeof(akp_graph_t));
+    if (!g) return NULL;
+    g->vertices = vertices;
+    g->is_directed = is_directed;
+    for (int i = 0; i < vertices; i++) {
+        for (int j = 0; j < vertices; j++) g->adj[i][j] = 0;
+    }
+    return g;
+}
+
+static inline void akp_graph_free(akp_graph_t* g) {
+    if (g) free(g);
+}
+
+static inline void akp_graph_add_edge(akp_graph_t* g, int u, int v, int weight) {
+    if (!g || u < 0 || u >= g->vertices || v < 0 || v >= g->vertices) return;
+    if (weight == 0) weight = 1;
+    g->adj[u][v] = weight;
+    if (!g->is_directed) g->adj[v][u] = weight;
+}
+
+static inline void akp_graph_render_adj_matrix(const akp_graph_t* g, const char* title) {
+    if (!g) return;
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "╔═══════════════════════════════════════════════════════╗\n" AKP_RESET);
+    printf(AKP_BOLD AKP_NEON_CYAN "║ 🌐 GRAPH ADJACENCY MATRIX: %-26s ║\n" AKP_RESET, title ? title : "Network Graph");
+    printf(AKP_BOLD AKP_NEON_CYAN "╠═══════════════════════════════════════════════════════╣\n" AKP_RESET);
+    printf("║ Type: %s | Vertices: %2d                   ║\n",
+           g->is_directed ? "Directed  " : "Undirected", g->vertices);
+    printf(AKP_BOLD AKP_NEON_CYAN "╚═══════════════════════════════════════════════════════╝\n" AKP_RESET);
+    printf("     ");
+    for (int j = 0; j < g->vertices; j++) printf(AKP_BOLD AKP_NEON_GOLD " V%d  " AKP_RESET, j);
+    printf("\n");
+    for (int i = 0; i < g->vertices; i++) {
+        printf(AKP_BOLD AKP_NEON_GOLD " V%d " AKP_RESET AKP_BOLD "│" AKP_RESET, i);
+        for (int j = 0; j < g->vertices; j++) {
+            if (g->adj[i][j] > 0) printf(AKP_BOLD AKP_NEON_GREEN " %2d  " AKP_RESET, g->adj[i][j]);
+            else printf(AKP_DIM "  .  " AKP_RESET);
+        }
+        printf(AKP_BOLD "│\n" AKP_RESET);
+    }
+    printf("\n");
+}
+
+static inline void akp_graph_bfs(const akp_graph_t* g, int start_vertex) {
+    if (!g || start_vertex < 0 || start_vertex >= g->vertices) return;
+    akp_init_console();
+    int visited[AKP_GRAPH_MAX_VERTICES] = {0};
+    int queue[AKP_GRAPH_MAX_VERTICES];
+    int front = 0, rear = 0;
+    printf(AKP_BOLD AKP_NEON_GREEN "🌊 BREADTH-FIRST SEARCH (BFS) STARTING AT V%d:\n" AKP_RESET, start_vertex);
+    printf("   Traversal Order: ");
+    visited[start_vertex] = 1;
+    queue[rear++] = start_vertex;
+    int first = 1;
+    while (front < rear) {
+        int u = queue[front++];
+        if (!first) printf(" -> ");
+        printf(AKP_BOLD AKP_NEON_GOLD "[V%d]" AKP_RESET, u);
+        first = 0;
+        for (int v = 0; v < g->vertices; v++) {
+            if (g->adj[u][v] > 0 && !visited[v]) {
+                visited[v] = 1;
+                queue[rear++] = v;
+            }
+        }
+    }
+    printf("\n\n");
+}
+
+/* ============================================================================
+ * [24] TERMINAL COLOR THEMES
+ * ============================================================================ */
+
+typedef enum {
+    AKP_THEME_CYBERPUNK = 0,
+    AKP_THEME_MATRIX,
+    AKP_THEME_SYNTHWAVE,
+    AKP_THEME_DRACULA,
+    AKP_THEME_MONOKAI
+} akp_theme_id_t;
+
+typedef struct {
+    const char* name;
+    akp_rgb_t primary;
+    akp_rgb_t secondary;
+    akp_rgb_t accent;
+} akp_theme_t;
+
+static inline akp_theme_t akp_theme_get(akp_theme_id_t id) {
+    akp_theme_t t;
+    switch (id) {
+        case AKP_THEME_MATRIX:
+            t.name = "Matrix Terminal";
+            t.primary = akp_rgb(0, 255, 65);
+            t.secondary = akp_rgb(0, 143, 17);
+            t.accent = akp_rgb(200, 255, 200);
+            break;
+        case AKP_THEME_SYNTHWAVE:
+            t.name = "Synthwave 84";
+            t.primary = akp_rgb(255, 0, 128);
+            t.secondary = akp_rgb(0, 240, 255);
+            t.accent = akp_rgb(255, 180, 0);
+            break;
+        case AKP_THEME_DRACULA:
+            t.name = "Dracula Pro";
+            t.primary = akp_rgb(189, 147, 249);
+            t.secondary = akp_rgb(255, 121, 198);
+            t.accent = akp_rgb(80, 250, 123);
+            break;
+        case AKP_THEME_MONOKAI:
+            t.name = "Monokai Sublime";
+            t.primary = akp_rgb(230, 219, 116);
+            t.secondary = akp_rgb(253, 151, 31);
+            t.accent = akp_rgb(102, 217, 239);
+            break;
+        case AKP_THEME_CYBERPUNK:
+        default:
+            t.name = "Cyberpunk 2077";
+            t.primary = akp_rgb(0, 243, 255);
+            t.secondary = akp_rgb(255, 0, 85);
+            t.accent = akp_rgb(255, 230, 0);
+            break;
+    }
+    return t;
+}
+
+static inline void akp_theme_preview(akp_theme_id_t id) {
+    akp_init_console();
+    akp_theme_t t = akp_theme_get(id);
+    printf(AKP_BOLD "🎨 THEME PREVIEW: " AKP_RESET);
+    akp_set_fg_rgb(t.primary.r, t.primary.g, t.primary.b);
+    printf("[%s] ", t.name);
+    akp_reset_color();
+    printf("Primary: ");
+    akp_set_fg_rgb(t.primary.r, t.primary.g, t.primary.b);
+    printf("████ ");
+    akp_reset_color();
+    printf("Secondary: ");
+    akp_set_fg_rgb(t.secondary.r, t.secondary.g, t.secondary.b);
+    printf("████ ");
+    akp_reset_color();
+    printf("Accent: ");
+    akp_set_fg_rgb(t.accent.r, t.accent.g, t.accent.b);
+    printf("████\n");
+    akp_reset_color();
 }
 
 #ifdef __cplusplus

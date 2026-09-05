@@ -40,7 +40,6 @@ int main() {
     canvas.drawText(8, 6, "AKP C++ ENGINE", gold);
     canvas.render("Hardware Vector Canvas");
 
-    akp_sound_success();
     akp_log_success("C++ Advanced Demonstration completed with 100%% precision!");
 
     return 0;

@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- *  AKP ENGINE - RETRO TERMINAL MELODY SYNTHESIZER (akp/melody.h)
+ *  AKP ENGINE - RETRO TERMINAL MELODY SYNTHESIZER (akp/melody.h) - SILENT BY DEFAULT
  *  Author: Akshar Miyani | AKP Studio
  * ============================================================================
  */
@@ -13,6 +13,14 @@ extern "C" {
 #endif
 
 #include "color.h"
+
+/* Silent by default (0dB) to prevent lab disruption.
+   Define AKP_ENABLE_AUDIO_HARDWARE only if explicit hardware speaker beeps are desired. */
+#ifdef AKP_ENABLE_AUDIO_HARDWARE
+  #define AKP_SOUND_ENABLED 1
+#else
+  #define AKP_SOUND_ENABLED 0
+#endif
 
 /* Standard Musical Note Frequencies (Hz) */
 #define AKP_NOTE_C4  262
@@ -39,16 +47,22 @@ extern "C" {
 #define AKP_NOTE_C6  1046
 
 static inline void akp_play_tone(int freq_hz, int duration_ms) {
-#if AKP_OS_WIN
+#if AKP_SOUND_ENABLED
+  #if AKP_OS_WIN
     if (freq_hz > 0) Beep(freq_hz, duration_ms);
     else Sleep(duration_ms);
-#else
+  #else
     if (freq_hz > 0) { printf("\a"); fflush(stdout); }
     usleep(duration_ms * 1000);
+  #endif
+#else
+    (void)freq_hz; (void)duration_ms; /* Silent mode: no-op */
 #endif
 }
 
 static inline void akp_melody_play(const int* freqs, const int* durations, int count, const char* name) {
+    (void)freqs; (void)durations; (void)count; (void)name;
+#if AKP_SOUND_ENABLED
     if (!freqs || !durations || count <= 0) return;
     akp_init_console();
     printf(AKP_BOLD AKP_NEON_PINK "🎵 Playing Retro Melody: %s...\n" AKP_RESET, name ? name : "Chiptune");
@@ -56,10 +70,12 @@ static inline void akp_melody_play(const int* freqs, const int* durations, int c
     for (int i = 0; i < count; i++) {
         akp_play_tone(freqs[i], durations[i]);
     }
+#endif
 }
 
 /* Iconic Tetris (Korobeiniki) Theme */
 static inline void akp_melody_tetris(void) {
+#if AKP_SOUND_ENABLED
     int notes[] = {
         AKP_NOTE_E5, AKP_NOTE_B4, AKP_NOTE_C5, AKP_NOTE_D5, AKP_NOTE_C5, AKP_NOTE_B4,
         AKP_NOTE_A4, AKP_NOTE_A4, AKP_NOTE_C5, AKP_NOTE_E5, AKP_NOTE_D5, AKP_NOTE_C5,
@@ -71,10 +87,12 @@ static inline void akp_melody_tetris(void) {
         300, 150, 300, 300, 300, 300, 400
     };
     akp_melody_play(notes, durs, sizeof(notes)/sizeof(notes[0]), "Tetris Theme (Korobeiniki)");
+#endif
 }
 
 /* Iconic Nokia Retro Tune */
 static inline void akp_melody_nokia(void) {
+#if AKP_SOUND_ENABLED
     int notes[] = {
         AKP_NOTE_E5, AKP_NOTE_D5, AKP_NOTE_FS4, AKP_NOTE_GS4,
         AKP_NOTE_CS5, AKP_NOTE_B4, AKP_NOTE_D4, AKP_NOTE_E4,
@@ -86,10 +104,12 @@ static inline void akp_melody_nokia(void) {
         150, 150, 250, 250, 500
     };
     akp_melody_play(notes, durs, sizeof(notes)/sizeof(notes[0]), "Nokia Retro Chime");
+#endif
 }
 
 /* Star Wars Imperial March Theme */
 static inline void akp_melody_starwars(void) {
+#if AKP_SOUND_ENABLED
     int notes[] = {
         AKP_NOTE_G4, AKP_NOTE_G4, AKP_NOTE_G4, AKP_NOTE_DS4, AKP_NOTE_AS4,
         AKP_NOTE_G4, AKP_NOTE_DS4, AKP_NOTE_AS4, AKP_NOTE_G4
@@ -99,6 +119,7 @@ static inline void akp_melody_starwars(void) {
         350, 250, 150, 600
     };
     akp_melody_play(notes, durs, sizeof(notes)/sizeof(notes[0]), "Star Wars Imperial Fanfare");
+#endif
 }
 
 #ifdef __cplusplus

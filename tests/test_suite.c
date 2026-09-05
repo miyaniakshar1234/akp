@@ -75,6 +75,47 @@ int main(void) {
     AKP_TEST(suite, "SysInfo: Physical RAM Detection", sys.total_ram_mb > 0);
     AKP_TEST(suite, "SysInfo: CPU Core Count Detection", sys.cpu_cores > 0);
 
+    /* Test 9: Visual LIFO Stack */
+    akp_stack_t* stack = akp_stack_create(4, "TestStack");
+    AKP_TEST(suite, "Stack: Instance Created", stack != NULL);
+    akp_stack_push(stack, 42);
+    akp_stack_push(stack, 99);
+    int popped_val = 0;
+    akp_stack_pop(stack, &popped_val);
+    AKP_ASSERT_EQ(suite, "Stack: LIFO Popped Value (99)", popped_val, 99);
+    AKP_ASSERT_EQ(suite, "Stack: Remaining Top Index (0)", stack->top, 0);
+    akp_stack_free(stack);
+
+    /* Test 10: Visual Circular Queue */
+    akp_queue_t* queue = akp_queue_create(4, "TestQueue");
+    AKP_TEST(suite, "Queue: Instance Created", queue != NULL);
+    akp_queue_enqueue(queue, 10);
+    akp_queue_enqueue(queue, 20);
+    int deq_val = 0;
+    akp_queue_dequeue(queue, &deq_val);
+    AKP_ASSERT_EQ(suite, "Queue: FIFO Dequeued Value (10)", deq_val, 10);
+    AKP_ASSERT_EQ(suite, "Queue: Remaining Size (1)", queue->size, 1);
+    akp_queue_free(queue);
+
+    /* Test 11: Linear & Binary Search */
+    int search_arr[] = {12, 24, 36, 48, 60, 72, 84};
+    int lin_idx = akp_search_linear(search_arr, 7, 48);
+    int bin_idx = akp_search_binary(search_arr, 7, 72);
+    AKP_ASSERT_EQ(suite, "Search: Linear Search Index for 48", lin_idx, 3);
+    AKP_ASSERT_EQ(suite, "Search: Binary Search Index for 72", bin_idx, 5);
+
+    /* Test 12: Graph Topology */
+    akp_graph_t* g = akp_graph_create(4, 0);
+    akp_graph_add_edge(g, 0, 1, 5);
+    akp_graph_add_edge(g, 1, 2, 8);
+    AKP_TEST(suite, "Graph: Undirected Symmetry Edge [0,1]", g->adj[0][1] == 5 && g->adj[1][0] == 5);
+    AKP_ASSERT_EQ(suite, "Graph: Edge Weight [1,2]", g->adj[1][2], 8);
+    akp_graph_free(g);
+
+    /* Test 13: Terminal Themes */
+    akp_theme_t t_dracula = akp_theme_get(AKP_THEME_DRACULA);
+    AKP_TEST(suite, "Theme: Dracula Primary Purple Non-Zero", t_dracula.primary.r > 0 && t_dracula.primary.b > 0);
+
     /* End Suite & Summary */
     return akp_test_suite_end(&suite);
 }

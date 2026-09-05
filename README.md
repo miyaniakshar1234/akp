@@ -44,15 +44,18 @@ Standard C (`<stdio.h>`) outputs plain, black-and-white text. **`AKP`** turns yo
 - 🔍 **Color-Coded Memory Hex-Dump**: Memory offsets, categorized byte colors, and ASCII inspection.
 - 🛡️ **Zero-Leak Heap Allocation Auditor**: `AKP_MALLOC` & `AKP_FREE` tracker reporting live allocations, frees, peak memory, and leak detection.
 - ⏱️ **Micro-Benchmark Timer**: Microsecond/nanosecond block execution timers (`AKP_BENCHMARK("Quicksort") { ... }`).
-- 🔊 **Retro Audio Effects**: Mario 8-bit coin chime, victory fanfare, and alert buzzers using hardware frequencies.
+- 🔇 **Silent Audio Engine (0dB Default)**: 100% silent execution by default to eliminate computer lab and classroom disruption.
+- 📦 **Visual LIFO Stack & Circular Queue**: In-terminal vertical stack with `TOP ->` / `BOT ->` pointers, load gauge bar, and circular FIFO queues with `F` / `R` markers.
+- 🔍 **Step-by-Step Visual Search Visualizer**: Linear ($O(N)$) and Binary ($O(\log N)$) search animation showing active partition subarrays, Low/Mid/High pointers, and comparisons.
+- 🌐 **Graph Topology & Traversals**: Adjacency matrices, weighted edges, and Breadth-First Search (BFS) / Depth-First Search (DFS) traversal order displays.
+- 🎨 **Terminal Color Themes**: Built-in swappable color themes: Cyberpunk 2077, Matrix Terminal, Synthwave 84, Dracula Pro, Monokai Sublime.
 - 📈 **DSA & Matrix Visualizers**: Horizontal in-terminal bar charts with selected element highlights and color-bracketed matrices.
 - 🌳 **Hierarchical Binary Tree Visualizer**: Horizontal branch layout (`┌──`, `│`, `└──`) for binary search trees and heaps.
 - 📐 **2D Function Plotter & Sparklines**: Rasterizes mathematical functions, complexity curves, and 8-level Unicode sparklines (` ▂▃▄▅▆▇█`).
 - 🎨 **2D Geometric Terminal Canvas**: In-terminal vector canvas drawing lines (Bresenham's algorithm), rectangles, circles, and text.
-- 🧪 **Micro Unit-Testing Framework**: Macro-based test suite (`AKP_TEST`, `AKP_ASSERT_EQ`) with pass-rate audits and Mario success chimes.
+- 🧪 **Micro Unit-Testing Framework**: Macro-based test suite (`AKP_TEST`, `AKP_ASSERT_EQ`) with pass-rate audits (31/31 passing).
 - 🎬 **Real-Time Live Sorting Animator**: Watch Bubble, Selection, and Insertion sorts animate directly in your console with in-place frame redraws!
 - 💻 **Hardware Telemetry Dashboard**: Live CPU architecture, core count, total RAM, free RAM, and graphical memory gauge bar (`akp_sysinfo_render`).
-- 🎵 **Retro 8-Bit Melody Synthesizer**: Plays Tetris (Korobeiniki), Star Wars Imperial March, and Nokia tunes through motherboard frequencies.
 - 📋 **Interactive Form Wizard**: Bordered dialogs capturing multi-type user inputs (text, numbers, confirmation checks).
 - 🔢 **Linear Algebra & Matrix Math**: Formatted bracketed matrix operations (multiplication, transpose, 3x3 determinant).
 - ❓ **Interactive CLI Prompts**: Arrow-key menu selector (`akp_prompt_select`), single-key confirmations (`[y/N]`), and masked password inputs (`••••••`).
