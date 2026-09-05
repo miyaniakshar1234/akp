@@ -26,6 +26,12 @@
 
 Standard C (`<stdio.h>`) outputs plain, black-and-white text. **`AKP`** turns your terminal into a glowing, Cyberpunk-styled development dashboard with zero dependencies. Drop it into your college lab assignments or production systems to instantly impress everyone in the room.
 
+<div align="center">
+
+[📖 **Architectural Manual**](DOCUMENTATION.md) &nbsp;•&nbsp; [🎓 **Lab Flex Guide**](docs/LAB_FLEX_GUIDE.md) &nbsp;•&nbsp; [📚 **API Reference**](docs/API_REFERENCE.md) &nbsp;•&nbsp; [🚀 **Releases**](https://github.com/miyaniakshar1234/akp/releases)
+
+</div>
+
 ---
 
 ## ✨ Features

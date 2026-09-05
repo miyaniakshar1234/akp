@@ -1,7 +1,7 @@
 # ⚡ AKP ENGINE: THE DEFINITIVE ARCHITECTURAL MANUAL
 ### *Master Documentation of the High-Performance Flashy C/C++ Toolkit*
 **Engineered & Authored by the Genius Architect: Akshar Miyani**  
-*AKP Studio Systems Architecture | Version 1.1.0*
+*AKP Studio Systems Architecture | Version 1.3.0*
 
 ---
 
@@ -24,9 +24,10 @@ Standard C (`<stdio.h>`) has remained visually static since 1972. In modern deve
 ```
 d:/Projects/AKP/
 ├── include/
-│   ├── akp.h                   # Standalone Amalgamated Master Header (v1.1.0)
-│   └── akp/                    # Modular Header Suite
-│       ├── akp.h               # Root Umbrella Header
+│   ├── akp.h                   # Standalone Amalgamated Master Header (v1.3.0)
+│   ├── akp.hpp                 # Modern C++17/20 STL & RAII Master Wrapper
+│   └── akp/                    # Modular Header Suite (20 Subsystems)
+│       ├── akp.h               # Root Modular Umbrella Header
 │       ├── color.h             # 24-Bit TrueColor RGB, ANSI, Linear Gradients
 │       ├── banner.h            # ASCII Branding Splash & Lab Evaluation Stamp
 │       ├── badge.h             # Real-Time Timestamped Status Badges
@@ -38,10 +39,21 @@ d:/Projects/AKP/
 │       ├── dsa.h               # In-Terminal DSA Array & Matrix Visualizers
 │       ├── plot.h              # Unicode Sparklines & 2D Curve Function Plotter
 │       ├── tree.h              # Hierarchical Binary Tree Structure Printer
-│       └── prompt.h            # Arrow-Key Menus, Masked Passwords & Prompts
+│       ├── prompt.h            # Arrow-Key Menus, Masked Passwords & Prompts
+│       ├── test.h              # Micro Unit-Testing Framework & Assertions
+│       ├── canvas.h            # 2D Geometric Terminal Vector Canvas (Bresenham)
+│       ├── form.h              # Multi-Field Terminal Interactive Form Wizard
+│       ├── sort_anim.h         # Live In-Terminal Sorting Animator (In-Place)
+│       ├── melody.h            # Retro 8-Bit Chiptune Musical Synthesizer
+│       ├── sysinfo.h           # Cyberpunk Hardware Telemetry Dashboard
+│       └── matrix.h            # Linear Algebra & Dynamic Matrix Operations
 ├── examples/
-│   ├── lab_demo.c              # C Demonstration Suite
-│   └── cpp_demo.cpp            # Modern C++17 STL Benchmark & Visualizer
+│   ├── lab_demo.c              # Comprehensive C Lab Demonstration
+│   ├── cpp_demo.cpp            # Modern C++17 STL Benchmark & Visualizer
+│   ├── cpp_advanced.cpp        # Modern C++ RAII Canvas & Table Demo
+│   └── lab_showcase_v130.c     # Live Showcase: Sorting, Telemetry, Melodies
+├── tests/
+│   └── test_suite.c            # Automated 20/20 Test Suite (100% Pass Rate)
 ├── cmake/
 │   └── AKPConfig.cmake.in      # Modern CMake Package Export
 ├── ports/akp/                  # Official vcpkg Port Definition
