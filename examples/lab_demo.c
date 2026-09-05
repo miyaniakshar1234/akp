@@ -18,8 +18,8 @@ int main(void) {
     akp_banner();
     akp_stamp("Advanced Data Structures & Algorithms Lab");
 
-    /* 2. Play Audio FX */
-    akp_sound_coin();
+    /* 2. Audio Engine (Silent 0dB by default) */
+    /* akp_sound_coin() is silent by default */
 
     /* 3. High-Visibility Status Logging */
     akp_log_akp("INIT", "AKP Core Runtime v1.1.0 loaded successfully.");
@@ -112,7 +112,6 @@ int main(void) {
     int chosen = akp_prompt_select("Choose Lab Operation", lab_options, 4);
     akp_log_success("Executing Operation #%d: %s", chosen + 1, lab_options[chosen]);
 
-    akp_sound_success();
     akp_log_success("All tests passed with 100%% precision! Engineered by Akshar Miyani.");
 
     return 0;

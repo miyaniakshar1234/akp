@@ -27,5 +27,9 @@
 #include "melody.h"
 #include "sysinfo.h"
 #include "matrix.h"
+#include "stack_queue.h"
+#include "search_anim.h"
+#include "graph.h"
+#include "theme.h"
 
 #endif /* AKP_MODULAR_ROOT_H */

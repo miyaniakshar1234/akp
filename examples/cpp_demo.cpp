@@ -39,7 +39,6 @@ int main() {
     akp_table_render(t);
     akp_table_free(t);
 
-    akp_sound_success();
     akp_log_success("C++ Demonstration completed with zero issues!");
     return 0;
 }

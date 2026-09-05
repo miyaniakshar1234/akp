@@ -1,7 +1,7 @@
 # ⚡ AKP ENGINE: THE DEFINITIVE ARCHITECTURAL MANUAL
 ### *Master Documentation of the High-Performance Flashy C/C++ Toolkit*
 **Engineered & Authored by the Genius Architect: Akshar Miyani**  
-*AKP Studio Systems Architecture | Version 1.3.0*
+*AKP Studio Systems Architecture | Version 1.4.0 (Silent Audio Engine)*
 
 ---
 
@@ -9,13 +9,14 @@
 
 Standard C (`<stdio.h>`) has remained visually static since 1972. In modern development environments, terminal applications are often expected to be dreary, monochromatic, and visually uninspiring.
 
-**AKP Engine** was conceived and engineered from first principles by **Akshar Miyani** to shatter this limitation. It provides an enterprise-grade, zero-dependency, header-only runtime that brings **24-bit TrueColor Cyberpunk aesthetics**, **real-time memory leak auditing**, **algorithmic visualizers**, **hardware audio feedback**, and **interactive terminal UI controls** to pure C and C++.
+**AKP Engine** was conceived and engineered from first principles by **Akshar Miyani** to shatter this limitation. It provides an enterprise-grade, zero-dependency, header-only runtime that brings **24-bit TrueColor Cyberpunk aesthetics**, **real-time memory leak auditing**, **algorithmic visualizers**, **hardware audio feedback (0dB silent by default)**, and **interactive terminal UI controls** to pure C and C++.
 
 ### Core Engineering Invariants:
 1. **Zero External Dependencies**: Operates strictly on standard C99/C11 and C++11/14/17/20 headers and platform kernels (`windows.h` on NT systems, `unistd.h` / `termios.h` on POSIX systems).
 2. **Deterministic Memory Footprint**: Minimal heap interaction. All visualizers and formatting engines utilize bounded stack buffers or strictly audited heap segments.
 3. **Cross-Platform Parity**: Identical visual fidelity and behavior across Windows Command Prompt, PowerShell, Windows Terminal, Linux virtual consoles, and macOS Terminal.
 4. **Drop-in Simplicity**: Dual deployment models: modular sub-headers under `include/akp/` for large systems, or a single amalgamated file `include/akp.h` for instant academic lab flexing.
+5. **Silent Audio Engine**: Completely 0dB silent by default to prevent classroom or computer lab disruption.
 
 ---
 
@@ -24,9 +25,9 @@ Standard C (`<stdio.h>`) has remained visually static since 1972. In modern deve
 ```
 d:/Projects/AKP/
 ├── include/
-│   ├── akp.h                   # Standalone Amalgamated Master Header (v1.3.0)
+│   ├── akp.h                   # Standalone Amalgamated Master Header (v1.4.0)
 │   ├── akp.hpp                 # Modern C++17/20 STL & RAII Master Wrapper
-│   └── akp/                    # Modular Header Suite (20 Subsystems)
+│   └── akp/                    # Modular Header Suite (24 Subsystems)
 │       ├── akp.h               # Root Modular Umbrella Header
 │       ├── color.h             # 24-Bit TrueColor RGB, ANSI, Linear Gradients
 │       ├── banner.h            # ASCII Branding Splash & Lab Evaluation Stamp
@@ -35,7 +36,7 @@ d:/Projects/AKP/
 │       ├── table.h             # Dynamic Auto-Sizing Unicode Border Tables
 │       ├── memory.h            # Hex-Dump Inspector & Zero-Leak Heap Auditor
 │       ├── timer.h             # Hardware Microsecond Benchmark Macros
-│       ├── sound.h             # Retro Hardware Audio & Frequency Sound FX
+│       ├── sound.h             # Retro Hardware Audio (Silent 0dB by Default)
 │       ├── dsa.h               # In-Terminal DSA Array & Matrix Visualizers
 │       ├── plot.h              # Unicode Sparklines & 2D Curve Function Plotter
 │       ├── tree.h              # Hierarchical Binary Tree Structure Printer
@@ -46,14 +47,19 @@ d:/Projects/AKP/
 │       ├── sort_anim.h         # Live In-Terminal Sorting Animator (In-Place)
 │       ├── melody.h            # Retro 8-Bit Chiptune Musical Synthesizer
 │       ├── sysinfo.h           # Cyberpunk Hardware Telemetry Dashboard
-│       └── matrix.h            # Linear Algebra & Dynamic Matrix Operations
+│       ├── matrix.h            # Linear Algebra & Dynamic Matrix Operations
+│       ├── stack_queue.h       # Visual LIFO Stack & Circular FIFO Queue
+│       ├── search_anim.h       # Step-by-Step Visual Linear & Binary Search
+│       ├── graph.h             # Graph Adjacency Matrix & BFS/DFS Traversals
+│       └── theme.h             # Cyberpunk, Matrix, Dracula, Synthwave Themes
 ├── examples/
 │   ├── lab_demo.c              # Comprehensive C Lab Demonstration
 │   ├── cpp_demo.cpp            # Modern C++17 STL Benchmark & Visualizer
 │   ├── cpp_advanced.cpp        # Modern C++ RAII Canvas & Table Demo
-│   └── lab_showcase_v130.c     # Live Showcase: Sorting, Telemetry, Melodies
+│   ├── lab_showcase_v130.c     # Live Showcase: Sorting, Telemetry, Melodies
+│   └── lab_showcase_v140.c     # v1.4.0 Showcase: Stack, Queue, Search, Graph
 ├── tests/
-│   └── test_suite.c            # Automated 20/20 Test Suite (100% Pass Rate)
+│   └── test_suite.c            # Automated 31/31 Test Suite (100% Pass Rate)
 ├── cmake/
 │   └── AKPConfig.cmake.in      # Modern CMake Package Export
 ├── ports/akp/                  # Official vcpkg Port Definition
@@ -316,6 +322,46 @@ On Windows systems, interfaces directly with the hardware motherboard timer spea
 - `akp_mat_transpose(A)`: Computes matrix transpose ($A^T$).
 - `akp_mat_det3x3(m)`: Computes $3 \times 3$ determinant.
 - `akp_mat_render(m, title)`: Renders matrix enclosed in color brackets (`│`), distinguishing positive, negative, and zero elements.
+
+---
+
+### 3.21. Visual LIFO Stack & Circular FIFO Queue (`akp/stack_queue.h`)
+
+#### Internal Mechanism:
+Provides dynamic visual containers with overflow/underflow protection, capacity telemetry bars, and pointer visualization.
+- `akp_stack_t* akp_stack_create(capacity, name)`: Allocates LIFO stack with named header.
+- `akp_stack_push(s, val)` / `akp_stack_pop(s, &out)`: Stack mutations with boundary checking.
+- `akp_stack_render(s)`: Renders vertical ASCII stack with `TOP ->` and `BOT ->` pointers and capacity percentage gauge.
+- `akp_queue_t* akp_queue_create(capacity, name)`: Allocates circular FIFO buffer.
+- `akp_queue_enqueue(q, val)` / `akp_queue_dequeue(q, &out)`: Circular modulo wraparound index math.
+- `akp_queue_render(q)`: Renders slots with dynamic `F` (front) and `R` (rear) pointer indicators.
+
+---
+
+### 3.22. Step-by-Step Visual Linear & Binary Search (`akp/search_anim.h`)
+
+#### Functions:
+- `akp_search_linear(arr, n, target)`: Step-by-step element comparison ($O(N)$) highlighting match status.
+- `akp_search_binary(arr, n, target)`: Interactive binary search ($O(\log N)$) rendering dynamic window subarrays, `Low`, `Mid`, `High` pointers, and search direction reasoning.
+
+---
+
+### 3.23. Graph Topology & Adjacency Matrix (`akp/graph.h`)
+
+#### Functions:
+- `akp_graph_create(vertices, is_directed)`: Allocates graph topology container.
+- `akp_graph_add_edge(g, u, v, weight)`: Inserts directed or undirected weighted edge.
+- `akp_graph_render_adj_matrix(g, title)`: Renders grid representation with vertex headers.
+- `akp_graph_bfs(g, start)`: Breadth-First Search traversal with queue tracking.
+- `akp_graph_dfs(g, start)`: Depth-First Search recursive traversal with path tracking.
+
+---
+
+### 3.24. Terminal Color Themes (`akp/theme.h`)
+
+#### Functions:
+- `akp_theme_get(id)`: Returns theme palette struct for `AKP_THEME_CYBERPUNK`, `AKP_THEME_MATRIX`, `AKP_THEME_SYNTHWAVE`, `AKP_THEME_DRACULA`, `AKP_THEME_MONOKAI`.
+- `akp_theme_preview(id)`: Renders swatch preview of primary, secondary, and accent TrueColors.
 
 ---
 

@@ -359,5 +359,80 @@ Header: `<akp.hpp>`
 
 ---
 
+## 21. Visual LIFO Stack & Circular FIFO Queue
+
+Header: `<akp/stack_queue.h>` or `<akp.h>`
+
+### `akp_stack_t* akp_stack_create(int capacity, const char* name)`
+- Allocates heap-managed LIFO stack structure.
+
+### `int akp_stack_push(akp_stack_t* s, int value)`
+- Pushes integer onto stack with overflow guard. Returns `1` on success, `0` on overflow.
+
+### `int akp_stack_pop(akp_stack_t* s, int* out_value)`
+- Pops top integer with underflow guard.
+
+### `void akp_stack_render(const akp_stack_t* s)`
+- Renders vertical graphical stack with pointer indicators (`TOP ->`, `BOT ->`) and load percentage gauge.
+
+### `akp_queue_t* akp_queue_create(int capacity, const char* name)`
+- Allocates circular FIFO queue.
+
+### `int akp_queue_enqueue(akp_queue_t* q, int value)`
+- Enqueues element with circular modulo index arithmetic.
+
+### `int akp_queue_dequeue(akp_queue_t* q, int* out_value)`
+- Dequeues element from front of queue.
+
+### `void akp_queue_render(const akp_queue_t* q)`
+- Renders horizontal circular queue buffer with dynamic `F` (front) and `R` (rear) cursor markers.
+
+---
+
+## 22. Visual Linear & Binary Search Visualizer
+
+Header: `<akp/search_anim.h>` or `<akp.h>`
+
+### `int akp_search_linear(const int* arr, int n, int target)`
+- Performs step-by-step in-terminal linear search ($O(N)$) with color comparison flags. Returns index or `-1`.
+
+### `int akp_search_binary(const int* arr, int n, int target)`
+- Performs animated binary search ($O(\log N)$) rendering active window subarray, `Low`, `Mid`, `High` pointers, and search partition rationale.
+
+---
+
+## 23. Graph Topology & Adjacency Matrix
+
+Header: `<akp/graph.h>` or `<akp.h>`
+
+### `akp_graph_t* akp_graph_create(int vertices, int is_directed)`
+- Allocates graph topology container with maximum 32 vertices.
+
+### `void akp_graph_add_edge(akp_graph_t* g, int u, int v, int weight)`
+- Adds weighted edge between vertices `u` and `v`.
+
+### `void akp_graph_render_adj_matrix(const akp_graph_t* g, const char* title)`
+- Renders 2D adjacency matrix table in terminal with color-highlighted weights.
+
+### `void akp_graph_bfs(const akp_graph_t* g, int start_vertex)`
+- Traverses graph via Breadth-First Search and prints traversal sequence.
+
+### `void akp_graph_dfs(const akp_graph_t* g, int start_vertex)`
+- Traverses graph via Depth-First Search and prints traversal sequence.
+
+---
+
+## 24. Terminal Color Themes Engine
+
+Header: `<akp/theme.h>` or `<akp.h>`
+
+### `akp_theme_t akp_theme_get(akp_theme_id_t id)`
+- Retrieves color scheme struct for `AKP_THEME_CYBERPUNK`, `AKP_THEME_MATRIX`, `AKP_THEME_SYNTHWAVE`, `AKP_THEME_DRACULA`, `AKP_THEME_MONOKAI`.
+
+### `void akp_theme_preview(akp_theme_id_t id)`
+- Prints colored swatches for primary, secondary, and accent TrueColors.
+
+---
+
 **Engineered by Akshar Miyani | AKP Studio**  
 *Master of Computer Applications (MCA)*

@@ -232,13 +232,12 @@ int main(void) {
 
 ---
 
-## 🎵 4. Hardware Audio Effects: When & How to Use
+## 🔇 4. Silent Audio Engine: Zero Lab Disruption (0dB Default)
 
-In computer labs, sound effects turn heads across the room. Use them strategically:
-- `akp_sound_coin()`: Trigger on successfully finding an element in a binary search or hash table.
-- `akp_sound_victory()`: Trigger upon completing the entire test case suite.
-- `akp_sound_alert()`: Trigger on error cases (e.g., divide by zero, stack underflow).
-- `akp_melody_tetris()`: Play as an Easter Egg or demo completion chime!
+By default in AKP v1.4.0, **all audio functions are 100% silent (0dB)**:
+- Running lab tests, demos, and sorting visualizers produces **zero motherboard beeps or speaker noise**, ensuring you never disturb evaluators, professors, or peers in quiet computer labs.
+- All sound APIs (`akp_sound_coin()`, `akp_sound_victory()`, `akp_sound_alert()`, `akp_melody_tetris()`) remain safe, no-op calls.
+- If hardware audio is explicitly desired, simply add `#define AKP_ENABLE_AUDIO_HARDWARE 1` before `#include "akp.h"`.
 
 ---
 
@@ -249,7 +248,7 @@ In computer labs, sound effects turn heads across the room. Use them strategical
 3. [ ] All dynamic memory tracked through `AKP_MALLOC` / `AKP_FREE`.
 4. [ ] `akp_mem_report()` called before `return 0` showing **0 bytes leaked**.
 5. [ ] Execution times timed with `AKP_BENCHMARK`.
-6. [ ] Victory chime triggered on successful evaluation.
+6. [ ] 100% silent operation verified (zero speaker noise).
 
 **Engineered by Akshar Miyani | AKP Studio**  
 *Master of Computer Applications (MCA)*
