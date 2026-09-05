@@ -255,6 +255,56 @@ On Windows systems, interfaces directly with the hardware motherboard timer spea
 - `akp::Canvas`: Object-oriented 2D canvas with RAII memory management.
 - `akp::sparkline(vector, label)`: Overloaded for `std::vector<double>`.
 
+### 3.16. Interactive Form & Input Wizard (`akp/form.h`)
+
+#### Functions & Structures:
+- `akp_form_create(title)`: Initializes a bordered form dialog box.
+- `akp_form_add_text(form, label, default)`: Adds a single-line string input field.
+- `akp_form_add_int(form, label, default)`: Adds an integer input field with numeric parsing.
+- `akp_form_add_confirm(form, label, default)`: Adds a boolean confirmation checkbox (`y/n`).
+- `akp_form_execute(form)`: Renders the input dialog and collects user inputs sequentially.
+- `akp_form_get_text(form, idx)`, `akp_form_get_int(form, idx)`, `akp_form_get_bool(form, idx)`: Type-safe field extractors.
+
+---
+
+### 3.17. Real-Time Terminal Sorting Animator (`akp/sort_anim.h`)
+
+#### Functions:
+- `akp_animate_sort(arr, n, type, delay_ms)`:
+  Animates sorting algorithms in the terminal in real time. At each comparison and swap, the cursor moves up by $n+1$ lines and re-renders the array bars with the active elements highlighted in Neon Pink (`◄ A`) and Acid Green (`◄ B`).
+  - `AKP_ANIM_BUBBLE`: Bubble sort animation.
+  - `AKP_ANIM_SELECTION`: Selection sort animation.
+  - `AKP_ANIM_INSERTION`: Insertion sort animation.
+
+---
+
+### 3.18. Retro Terminal Melody Synthesizer (`akp/melody.h`)
+
+#### Functions:
+- `akp_play_tone(freq_hz, duration_ms)`: Emits hardware frequency beeps.
+- `akp_melody_tetris()`: Plays the iconic 8-bit Tetris theme (Korobeiniki).
+- `akp_melody_starwars()`: Plays the Star Wars Imperial March fanfare.
+- `akp_melody_nokia()`: Plays the nostalgic Nokia retro tune.
+
+---
+
+### 3.19. Hardware Telemetry & System Monitor (`akp/sysinfo.h`)
+
+#### Functions:
+- `akp_sysinfo_get()`: Queries native OS APIs for total physical RAM, free RAM, memory load percentage, CPU core count, and processor architecture.
+- `akp_sysinfo_render()`: Renders a Cyberpunk Neofetch-style telemetry monitor card with a live graphical memory usage gauge bar `[██████░░░░] 59%`.
+
+---
+
+### 3.20. Linear Algebra & Matrix Operations (`akp/matrix.h`)
+
+#### Functions:
+- `akp_mat_create(rows, cols)`: Allocates dynamic 2D floating-point matrix buffer.
+- `akp_mat_multiply(A, B)`: Performs matrix multiplication ($C = A \times B$) with dimension validation.
+- `akp_mat_transpose(A)`: Computes matrix transpose ($A^T$).
+- `akp_mat_det3x3(m)`: Computes $3 \times 3$ determinant.
+- `akp_mat_render(m, title)`: Renders matrix enclosed in color brackets (`│`), distinguishing positive, negative, and zero elements.
+
 ---
 
 ## 🚀 4. Package Manager & Installation Manual

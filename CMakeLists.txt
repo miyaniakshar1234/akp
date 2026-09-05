@@ -18,6 +18,9 @@ target_link_libraries(cpp_demo PRIVATE akp)
 add_executable(cpp_advanced examples/cpp_advanced.cpp)
 target_link_libraries(cpp_advanced PRIVATE akp)
 
+add_executable(lab_showcase_v130 examples/lab_showcase_v130.c)
+target_link_libraries(lab_showcase_v130 PRIVATE akp)
+
 # Test Suite target
 enable_testing()
 add_executable(test_suite tests/test_suite.c)

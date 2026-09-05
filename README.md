@@ -44,7 +44,11 @@ Standard C (`<stdio.h>`) outputs plain, black-and-white text. **`AKP`** turns yo
 - 📐 **2D Function Plotter & Sparklines**: Rasterizes mathematical functions, complexity curves, and 8-level Unicode sparklines (` ▂▃▄▅▆▇█`).
 - 🎨 **2D Geometric Terminal Canvas**: In-terminal vector canvas drawing lines (Bresenham's algorithm), rectangles, circles, and text.
 - 🧪 **Micro Unit-Testing Framework**: Macro-based test suite (`AKP_TEST`, `AKP_ASSERT_EQ`) with pass-rate audits and Mario success chimes.
-- ⚡ **Modern C++17/20 STL & RAII Wrapper**: Scoped benchmark timers, stream color manipulators, and fluent builder classes via `include/akp.hpp`.
+- 🎬 **Real-Time Live Sorting Animator**: Watch Bubble, Selection, and Insertion sorts animate directly in your console with in-place frame redraws!
+- 💻 **Hardware Telemetry Dashboard**: Live CPU architecture, core count, total RAM, free RAM, and graphical memory gauge bar (`akp_sysinfo_render`).
+- 🎵 **Retro 8-Bit Melody Synthesizer**: Plays Tetris (Korobeiniki), Star Wars Imperial March, and Nokia tunes through motherboard frequencies.
+- 📋 **Interactive Form Wizard**: Bordered dialogs capturing multi-type user inputs (text, numbers, confirmation checks).
+- 🔢 **Linear Algebra & Matrix Math**: Formatted bracketed matrix operations (multiplication, transpose, 3x3 determinant).
 - ❓ **Interactive CLI Prompts**: Arrow-key menu selector (`akp_prompt_select`), single-key confirmations (`[y/N]`), and masked password inputs (`••••••`).
 
 ---

@@ -1,0 +1,26 @@
+# Build outputs & object files
+*.obj
+*.o
+*.exe
+*.out
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+*.pdb
+*.ilk
+
+# Build directories
+build/
+bin/
+out/
+build_*/
+
+# IDE & Editor caches
+.vs/
+.vscode/
+.idea/
+CMakeSettings.json
+*.swp
+*~

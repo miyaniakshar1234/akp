@@ -22,5 +22,10 @@
 #include "tree.h"
 #include "test.h"
 #include "canvas.h"
+#include "form.h"
+#include "sort_anim.h"
+#include "melody.h"
+#include "sysinfo.h"
+#include "matrix.h"
 
 #endif /* AKP_MODULAR_ROOT_H */

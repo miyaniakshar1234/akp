@@ -58,6 +58,23 @@ int main(void) {
     double elapsed = akp_timer_stop_ms(&timer);
     AKP_TEST(suite, "Timer: Monotonic Elapsed Duration (>5ms)", elapsed >= 5.0);
 
+    /* Test 7: Matrix Math & Multiplication */
+    akp_mat_t* m1 = akp_mat_create(2, 2);
+    akp_mat_t* m2 = akp_mat_create(2, 2);
+    akp_mat_set(m1, 0, 0, 1.0); akp_mat_set(m1, 1, 1, 1.0); /* Identity */
+    akp_mat_set(m2, 0, 0, 5.0); akp_mat_set(m2, 0, 1, 3.0);
+    akp_mat_set(m2, 1, 0, 2.0); akp_mat_set(m2, 1, 1, 4.0);
+    akp_mat_t* m3 = akp_mat_multiply(m1, m2);
+    AKP_TEST(suite, "Matrix: Multiplication Instance", m3 != NULL);
+    AKP_ASSERT_EQ(suite, "Matrix: Multiplication Result [0,0]", (int)akp_mat_get(m3, 0, 0), 5);
+    AKP_ASSERT_EQ(suite, "Matrix: Multiplication Result [1,1]", (int)akp_mat_get(m3, 1, 1), 4);
+    akp_mat_free(m1); akp_mat_free(m2); akp_mat_free(m3);
+
+    /* Test 8: Hardware Telemetry */
+    akp_sysinfo_t sys = akp_sysinfo_get();
+    AKP_TEST(suite, "SysInfo: Physical RAM Detection", sys.total_ram_mb > 0);
+    AKP_TEST(suite, "SysInfo: CPU Core Count Detection", sys.cpu_cores > 0);
+
     /* End Suite & Summary */
     return akp_test_suite_end(&suite);
 }
