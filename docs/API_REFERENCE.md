@@ -1,7 +1,7 @@
 # 📚 AKP ENGINE: COMPLETE API & SUBSYSTEM REFERENCE
 ### *Technical Specification, Function Signatures & Execution Contracts*
 **Architect: Akshar Miyani | AKP Studio**  
-*Release: v1.3.0 | Language Targets: C99, C11, C++17, C++20*
+*Release: v1.5.0 | Language Targets: C99, C11, C++17, C++20*
 
 ---
 
@@ -26,6 +26,14 @@
 18. [Cyberpunk Hardware Telemetry HUD](#18-cyberpunk-hardware-telemetry-hud)
 19. [Linear Algebra & Matrix Engine](#19-linear-algebra--matrix-engine)
 20. [Modern C++ STL Wrapper (akp.hpp)](#20-modern-c-stl-wrapper-akphpp)
+21. [Visual LIFO Stack & Circular FIFO Queue](#21-visual-lifo-stack--circular-fifo-queue)
+22. [Visual Linear & Binary Search Visualizer](#22-visual-linear--binary-search-visualizer)
+23. [Graph Topology & Adjacency Matrix](#23-graph-topology--adjacency-matrix)
+24. [Terminal Color Themes Engine](#24-terminal-color-themes-engine)
+25. [Visual Hash Table with Chaining](#25-visual-hash-table-with-chaining)
+26. [Visual Singly & Doubly Linked Lists](#26-visual-singly--doubly-linked-lists)
+27. [Dijkstra Shortest Path Visualizer](#27-dijkstra-shortest-path-visualizer)
+28. [String Pattern Matching Visualizer](#28-string-pattern-matching-visualizer)
 
 ---
 
@@ -431,6 +439,92 @@ Header: `<akp/theme.h>` or `<akp.h>`
 
 ### `void akp_theme_preview(akp_theme_id_t id)`
 - Prints colored swatches for primary, secondary, and accent TrueColors.
+
+---
+
+## 25. Visual Hash Table with Chaining
+
+Header: `<akp/hash_table.h>` or `<akp.h>`
+
+### `akp_ht_t* akp_ht_create(int num_buckets)`
+- Allocates a dynamically sized hash table with separate chaining buckets.
+- **Parameters**: `num_buckets` (recommended prime number or power of two).
+- **Returns**: Pointer to initialized `akp_ht_t`.
+- **Complexity**: $O(B)$ where $B$ is number of buckets.
+
+### `bool akp_ht_insert(akp_ht_t* ht, const char* key, int value)`
+- Inserts or updates a key-value mapping. Traverses bucket chain to update existing keys or appends a new node.
+- **Complexity**: $O(1)$ average, $O(N)$ worst case under severe collision.
+
+### `bool akp_ht_get(const akp_ht_t* ht, const char* key, int* out_val)`
+- Lookups `key` in bucket chain, storing result in `*out_val`.
+- **Returns**: `true` if found, `false` otherwise.
+- **Complexity**: $O(1)$ average.
+
+### `void akp_ht_render(const akp_ht_t* ht, const char* title)`
+- Renders full bucket diagram with pointer arrows, element count, collision count, max chain depth, and load factor ($\alpha = N / B$).
+
+### `void akp_ht_destroy(akp_ht_t* ht)`
+- Deallocates all node chains and bucket arrays.
+
+---
+
+## 26. Visual Singly & Doubly Linked Lists
+
+Header: `<akp/linked_list.h>` or `<akp.h>`
+
+### `akp_slist_t* akp_slist_create(void)` / `void akp_slist_destroy(akp_slist_t* list)`
+- Allocates and frees a singly linked list container.
+
+### `void akp_slist_push_front(akp_slist_t* list, int val)` / `void akp_slist_push_back(akp_slist_t* list, int val)`
+- Inserts element at head ($O(1)$) or tail ($O(N)$) of singly linked list.
+
+### `void akp_slist_render(const akp_slist_t* list, const char* title)`
+- Renders singly linked list chain: `[HEAD] -> [ 10 | • ] -> [ 25 | • ] -> [NULL]`.
+
+### `akp_dlist_t* akp_dlist_create(void)` / `void akp_dlist_destroy(akp_dlist_t* list)`
+- Allocates and frees a doubly linked list container.
+
+### `void akp_dlist_push_front(akp_dlist_t* list, int val)` / `void akp_dlist_push_back(akp_dlist_t* list, int val)`
+- Inserts element at head ($O(1)$) or tail ($O(1)$ via tail pointer) of doubly linked list.
+
+### `void akp_dlist_render(const akp_dlist_t* list, const char* title)`
+- Renders doubly linked list chain: `[HEAD] <-> [ • | 10 | • ] <-> [ • | 25 | • ] <-> [TAIL]`.
+
+---
+
+## 27. Dijkstra Shortest Path Visualizer
+
+Header: `<akp/dijkstra.h>` or `<akp.h>`
+
+### `akp_dijkstra_res_t akp_dijkstra_solve(const akp_graph_t* g, int source)`
+- Computes single-source shortest paths on weighted graph with non-negative edges using greedy relaxation.
+- **Returns**: `akp_dijkstra_res_t` struct containing `dist[]`, `parent[]`, and visitation status.
+- **Complexity**: $O(V^2)$ (dense matrix).
+
+### `void akp_dijkstra_render(const akp_graph_t* g, const akp_dijkstra_res_t* res, const char* title)`
+- Renders routing table with columns: Destination, Cost / Distance, Full Traversed Path (e.g. `0 -> 2 -> 3`), and Status badge.
+
+---
+
+## 28. String Pattern Matching Visualizer
+
+Header: `<akp/pattern_match.h>` or `<akp.h>`
+
+### `akp_pattern_res_t akp_pattern_naive(const char* text, const char* pattern)`
+- Brute-force substring search tracking all character comparisons.
+- **Complexity**: $O(N \cdot M)$.
+
+### `void akp_kmp_compute_lps(const char* pattern, int* lps)`
+- Computes Longest Prefix Suffix ($\pi$) lookup table for Knuth-Morris-Pratt search.
+- **Complexity**: $O(M)$.
+
+### `akp_pattern_res_t akp_kmp_search(const char* text, const char* pattern)`
+- Performs linear time Knuth-Morris-Pratt pattern search using LPS jump shifts.
+- **Complexity**: $O(N + M)$.
+
+### `void akp_kmp_render(const char* text, const char* pattern, const akp_pattern_res_t* res, const char* title)`
+- Displays LPS table, text length, pattern length, match occurrences, and total comparison count.
 
 ---
 

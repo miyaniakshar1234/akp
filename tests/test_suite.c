@@ -116,6 +116,56 @@ int main(void) {
     akp_theme_t t_dracula = akp_theme_get(AKP_THEME_DRACULA);
     AKP_TEST(suite, "Theme: Dracula Primary Purple Non-Zero", t_dracula.primary.r > 0 && t_dracula.primary.b > 0);
 
+    /* Test 14: Hash Table (Chaining & Collisions) */
+    akp_ht_t* ht = akp_ht_create(4, "TestHashTable");
+    AKP_TEST(suite, "HashTable: Instance Created", ht != NULL);
+    akp_ht_insert(ht, 10, 100);
+    akp_ht_insert(ht, 14, 140); /* 10 % 4 == 2, 14 % 4 == 2 -> collision */
+    int ht_val = 0;
+    int ht_found = akp_ht_search(ht, 14, &ht_val);
+    AKP_TEST(suite, "HashTable: Key 14 Search Success", ht_found == 1);
+    AKP_ASSERT_EQ(suite, "HashTable: Key 14 Value Check", ht_val, 140);
+    AKP_TEST(suite, "HashTable: Collision Detection (>0)", ht->collisions > 0);
+    akp_ht_free(ht);
+
+    /* Test 15: Singly Linked List */
+    akp_slist_t* slist = akp_slist_create("TestSList");
+    AKP_TEST(suite, "SList: Instance Created", slist != NULL);
+    akp_slist_insert_head(slist, 50);
+    akp_slist_insert_tail(slist, 100);
+    AKP_ASSERT_EQ(suite, "SList: Size Check (2)", slist->size, 2);
+    int sdel = akp_slist_delete(slist, 50);
+    AKP_TEST(suite, "SList: Delete Head Element (50)", sdel == 1 && slist->head->data == 100);
+    akp_slist_free(slist);
+
+    /* Test 16: Doubly Linked List */
+    akp_dlist_t* dlist = akp_dlist_create("TestDList");
+    AKP_TEST(suite, "DList: Instance Created", dlist != NULL);
+    akp_dlist_insert_tail(dlist, 10);
+    akp_dlist_insert_tail(dlist, 20);
+    AKP_ASSERT_EQ(suite, "DList: Tail Node Value (20)", dlist->tail->data, 20);
+    AKP_TEST(suite, "DList: Doubly Linked Pointers Non-Null", dlist->tail->prev == dlist->head);
+    akp_dlist_free(dlist);
+
+    /* Test 17: Dijkstra Shortest Path */
+    akp_graph_t* dg = akp_graph_create(4, 0);
+    akp_graph_add_edge(dg, 0, 1, 4);
+    akp_graph_add_edge(dg, 0, 2, 1);
+    akp_graph_add_edge(dg, 2, 1, 2);
+    akp_graph_add_edge(dg, 1, 3, 1);
+    akp_dijkstra_t dres = akp_dijkstra_solve(dg, 0);
+    AKP_ASSERT_EQ(suite, "Dijkstra: Shortest Path to V1 (via V2: 3)", dres.dist[1], 3);
+    AKP_ASSERT_EQ(suite, "Dijkstra: Shortest Path to V3 (4)", dres.dist[3], 4);
+    akp_graph_free(dg);
+
+    /* Test 18: String Pattern Matching (KMP & Naive) */
+    const char* text_str = "ABABDABACDABABCABAB";
+    const char* pat_str  = "ABABCABAB";
+    int naive_idx = akp_search_naive_pattern(text_str, pat_str);
+    int kmp_idx   = akp_search_kmp(text_str, pat_str);
+    AKP_ASSERT_EQ(suite, "Pattern: Naive Match Index (10)", naive_idx, 10);
+    AKP_ASSERT_EQ(suite, "Pattern: KMP Match Index (10)", kmp_idx, 10);
+
     /* End Suite & Summary */
     return akp_test_suite_end(&suite);
 }

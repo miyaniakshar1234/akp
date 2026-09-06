@@ -31,5 +31,9 @@
 #include "search_anim.h"
 #include "graph.h"
 #include "theme.h"
+#include "hash_table.h"
+#include "linked_list.h"
+#include "dijkstra.h"
+#include "pattern_match.h"
 
 #endif /* AKP_MODULAR_ROOT_H */
