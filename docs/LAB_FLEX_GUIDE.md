@@ -232,9 +232,120 @@ int main(void) {
 
 ---
 
+### 📌 Recipe 7: Visual Hash Table with Collision Chaining
+
+When your practical asks for Hash Tables, linear probing, or collision resolution:
+
+```c
+#include "akp.h"
+
+int main(void) {
+    akp_banner();
+    akp_stamp("Practical Lab #11: Hash Table with Chaining");
+
+    akp_ht_t* ht = akp_ht_create(5);
+    akp_ht_insert(ht, "id_101", 95);
+    akp_ht_insert(ht, "id_102", 88);
+    akp_ht_insert(ht, "id_106", 72); // intentional collision
+    akp_ht_insert(ht, "id_111", 99); // intentional collision
+
+    akp_ht_render(ht, "Student Grades Hash Map");
+    akp_ht_destroy(ht);
+
+    return 0;
+}
+```
+
+---
+
+### 📌 Recipe 8: Visual Singly & Doubly Linked Lists
+
+Demonstrating dynamic node pointer references with ASCII memory blocks:
+
+```c
+#include "akp.h"
+
+int main(void) {
+    akp_banner();
+    akp_stamp("Practical Lab #12: Dynamic Linked Lists");
+
+    // Singly Linked List
+    akp_slist_t* slist = akp_slist_create();
+    akp_slist_push_back(slist, 10);
+    akp_slist_push_back(slist, 25);
+    akp_slist_push_back(slist, 50);
+    akp_slist_render(slist, "Singly Linked List Chain");
+    akp_slist_destroy(slist);
+
+    // Doubly Linked List
+    akp_dlist_t* dlist = akp_dlist_create();
+    akp_dlist_push_back(dlist, 100);
+    akp_dlist_push_back(dlist, 200);
+    akp_dlist_push_back(dlist, 300);
+    akp_dlist_render(dlist, "Doubly Linked List Chain");
+    akp_dlist_destroy(dlist);
+
+    return 0;
+}
+```
+
+---
+
+### 📌 Recipe 9: Dijkstra Shortest Path Routing Visualizer
+
+Solving single-source shortest paths on weighted networks:
+
+```c
+#include "akp.h"
+
+int main(void) {
+    akp_banner();
+    akp_stamp("Practical Lab #13: Dijkstra Shortest Path Analysis");
+
+    akp_graph_t* g = akp_graph_create(5, 0); // 5 vertices, undirected
+    akp_graph_add_edge(g, 0, 1, 4);
+    akp_graph_add_edge(g, 0, 2, 2);
+    akp_graph_add_edge(g, 1, 2, 1);
+    akp_graph_add_edge(g, 1, 3, 5);
+    akp_graph_add_edge(g, 2, 3, 8);
+    akp_graph_add_edge(g, 3, 4, 3);
+
+    akp_dijkstra_res_t res = akp_dijkstra_solve(g, 0);
+    akp_dijkstra_render(g, &res, "Shortest Path Routing Table (Source = Node 0)");
+
+    akp_graph_free(g);
+    return 0;
+}
+```
+
+---
+
+### 📌 Recipe 10: Knuth-Morris-Pratt (KMP) Pattern Matching
+
+Showcasing linear-time string search and Longest Prefix Suffix (LPS) table construction:
+
+```c
+#include "akp.h"
+
+int main(void) {
+    akp_banner();
+    akp_stamp("Practical Lab #14: KMP Substring Pattern Search");
+
+    const char* text = "ABABDABACDABABCABAB";
+    const char* pattern = "ABABCABAB";
+
+    akp_pattern_res_t res = akp_kmp_search(text, pattern);
+    akp_kmp_render(text, pattern, &res, "KMP Pattern Matching Telemetry");
+
+    return 0;
+}
+```
+
+---
+
 ## 🔇 4. Silent Audio Engine: Zero Lab Disruption (0dB Default)
 
-By default in AKP v1.4.0, **all audio functions are 100% silent (0dB)**:
+By default in AKP v1.5.0, **all audio functions are 100% silent (0dB)**:
 - Running lab tests, demos, and sorting visualizers produces **zero motherboard beeps or speaker noise**, ensuring you never disturb evaluators, professors, or peers in quiet computer labs.
 - All sound APIs (`akp_sound_coin()`, `akp_sound_victory()`, `akp_sound_alert()`, `akp_melody_tetris()`) remain safe, no-op calls.
 - If hardware audio is explicitly desired, simply add `#define AKP_ENABLE_AUDIO_HARDWARE 1` before `#include "akp.h"`.

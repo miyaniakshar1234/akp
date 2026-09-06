@@ -7,7 +7,7 @@
  *  ██║  ██║██║ ╚██╗██║          ███████╗██║ ╚████║╚██████╔╝██║██║ ╚████║███████╗
  *  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝          ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝╚══════╝
  * ============================================================================
- *  🚀 AKP CORE ENGINE v1.4.0 (Silent Audio Default)
+ *  🚀 AKP CORE ENGINE v1.5.0 (Silent Audio Default)
  *  Author: Akshar Miyani
  *  Identity: AKP Studio / Advanced C & C++ Flashy Development Toolkit
  *  Zero-Dependency | Pure C99/C11 & C++11/14/17/20 Compatible | Cross-Platform
@@ -160,7 +160,7 @@ static inline void akp_banner(void) {
     printf(AKP_NEON_CYAN "║" AKP_GOLD        "  ██║  ██║██║ ╚██╗██║         ███████╗██║ ╚████║╚██████╔╝██║██║ ╚████║███████╗ " AKP_NEON_CYAN "║\n" AKP_RESET);
     printf(AKP_NEON_CYAN "║" AKP_GOLD        "  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝         ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝╚══════╝ " AKP_NEON_CYAN "║\n" AKP_RESET);
     printf(AKP_NEON_CYAN "╠═══════════════════════════════════════════════════════════════════════════════╣\n" AKP_RESET);
-    printf(AKP_NEON_CYAN "║" AKP_BOLD AKP_NEON_YELLOW "        🚀 AKP CORE ENGINE v1.4.0  |  ENGINEERED BY: AKSHAR MIYANI              " AKP_NEON_CYAN "║\n" AKP_RESET);
+    printf(AKP_NEON_CYAN "║" AKP_BOLD AKP_NEON_YELLOW "        🚀 AKP CORE ENGINE v1.5.0  |  ENGINEERED BY: AKSHAR MIYANI              " AKP_NEON_CYAN "║\n" AKP_RESET);
     printf(AKP_NEON_CYAN "║" AKP_DIM AKP_NEON_CYAN       "        ⚡ Ultra-Flashy Terminal Output & High-Performance C/C++ Toolkit        " AKP_NEON_CYAN "║\n" AKP_RESET);
     printf(AKP_NEON_CYAN "╚═══════════════════════════════════════════════════════════════════════════════╝\n" AKP_RESET);
     printf("\n");
@@ -1544,6 +1544,442 @@ static inline void akp_theme_preview(akp_theme_id_t id) {
     akp_set_fg_rgb(t.accent.r, t.accent.g, t.accent.b);
     printf("████\n");
     akp_reset_color();
+}
+
+/* ============================================================================
+ * [25] HASH TABLE VISUALIZER (CHAINING)
+ * ============================================================================ */
+
+typedef struct akp_ht_node {
+    int key;
+    int value;
+    struct akp_ht_node* next;
+} akp_ht_node_t;
+
+typedef struct {
+    akp_ht_node_t** buckets;
+    int num_buckets;
+    int num_elements;
+    int collisions;
+    char name[32];
+} akp_ht_t;
+
+static inline int akp_ht_hash(int key, int num_buckets) {
+    int h = key % num_buckets;
+    return (h < 0) ? (h + num_buckets) : h;
+}
+
+static inline akp_ht_t* akp_ht_create(int num_buckets, const char* name) {
+    akp_init_console();
+    if (num_buckets <= 0) num_buckets = 8;
+    akp_ht_t* ht = (akp_ht_t*)malloc(sizeof(akp_ht_t));
+    if (!ht) return NULL;
+    ht->num_buckets = num_buckets;
+    ht->num_elements = 0;
+    ht->collisions = 0;
+    strncpy(ht->name, name ? name : "HashTable", sizeof(ht->name) - 1);
+    ht->name[sizeof(ht->name) - 1] = '\0';
+    ht->buckets = (akp_ht_node_t**)calloc((size_t)num_buckets, sizeof(akp_ht_node_t*));
+    return ht;
+}
+
+static inline void akp_ht_insert(akp_ht_t* ht, int key, int value) {
+    if (!ht) return;
+    int idx = akp_ht_hash(key, ht->num_buckets);
+    akp_ht_node_t* cur = ht->buckets[idx];
+    while (cur) {
+        if (cur->key == key) {
+            cur->value = value;
+            return;
+        }
+        cur = cur->next;
+    }
+    if (ht->buckets[idx] != NULL) ht->collisions++;
+    akp_ht_node_t* new_node = (akp_ht_node_t*)malloc(sizeof(akp_ht_node_t));
+    new_node->key = key;
+    new_node->value = value;
+    new_node->next = ht->buckets[idx];
+    ht->buckets[idx] = new_node;
+    ht->num_elements++;
+}
+
+static inline int akp_ht_search(const akp_ht_t* ht, int key, int* out_value) {
+    if (!ht) return 0;
+    int idx = akp_ht_hash(key, ht->num_buckets);
+    akp_ht_node_t* cur = ht->buckets[idx];
+    while (cur) {
+        if (cur->key == key) {
+            if (out_value) *out_value = cur->value;
+            return 1;
+        }
+        cur = cur->next;
+    }
+    return 0;
+}
+
+static inline void akp_ht_render(const akp_ht_t* ht) {
+    if (!ht) return;
+    akp_init_console();
+    float load_factor = (ht->num_buckets > 0) ? ((float)ht->num_elements / (float)ht->num_buckets) : 0.0f;
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "╔═════════════════════════════════════════════════════════════════════════╗\n" AKP_RESET);
+    printf(AKP_BOLD AKP_NEON_CYAN "║ 🗄️  HASH TABLE VISUALIZER (CHAINING): %-33s ║\n" AKP_RESET, ht->name);
+    printf(AKP_BOLD AKP_NEON_CYAN "╠═════════════════════════════════════════════════════════════════════════╣\n" AKP_RESET);
+    printf("║ Buckets: %2d | Elements: %2d | Collisions: %2d | Load Factor: %4.2f      ║\n",
+           ht->num_buckets, ht->num_elements, ht->collisions, load_factor);
+    printf(AKP_BOLD AKP_NEON_CYAN "╚═════════════════════════════════════════════════════════════════════════╝\n" AKP_RESET);
+    for (int i = 0; i < ht->num_buckets; i++) {
+        printf(AKP_BOLD AKP_NEON_GOLD " [Bucket %2d] " AKP_RESET, i);
+        akp_ht_node_t* cur = ht->buckets[i];
+        if (!cur) {
+            printf(AKP_DIM "--> (empty)\n" AKP_RESET);
+        } else {
+            while (cur) {
+                printf("--> " AKP_BOLD AKP_NEON_CYAN "[Key: %3d | Val: %4d]" AKP_RESET " ", cur->key, cur->value);
+                cur = cur->next;
+            }
+            printf("--> " AKP_DIM "NULL\n" AKP_RESET);
+        }
+    }
+    printf("\n");
+}
+
+static inline void akp_ht_free(akp_ht_t* ht) {
+    if (!ht) return;
+    for (int i = 0; i < ht->num_buckets; i++) {
+        akp_ht_node_t* cur = ht->buckets[i];
+        while (cur) {
+            akp_ht_node_t* tmp = cur;
+            cur = cur->next;
+            free(tmp);
+        }
+    }
+    free(ht->buckets);
+    free(ht);
+}
+
+/* ============================================================================
+ * [26] LINKED LIST VISUALIZER (SINGLY & DOUBLY)
+ * ============================================================================ */
+
+typedef struct akp_snode {
+    int data;
+    struct akp_snode* next;
+} akp_snode_t;
+
+typedef struct {
+    akp_snode_t* head;
+    int size;
+    char name[32];
+} akp_slist_t;
+
+static inline akp_slist_t* akp_slist_create(const char* name) {
+    akp_init_console();
+    akp_slist_t* list = (akp_slist_t*)malloc(sizeof(akp_slist_t));
+    if (!list) return NULL;
+    list->head = NULL;
+    list->size = 0;
+    strncpy(list->name, name ? name : "SinglyList", sizeof(list->name) - 1);
+    list->name[sizeof(list->name) - 1] = '\0';
+    return list;
+}
+
+static inline void akp_slist_insert_head(akp_slist_t* list, int data) {
+    if (!list) return;
+    akp_snode_t* node = (akp_snode_t*)malloc(sizeof(akp_snode_t));
+    node->data = data;
+    node->next = list->head;
+    list->head = node;
+    list->size++;
+}
+
+static inline void akp_slist_insert_tail(akp_slist_t* list, int data) {
+    if (!list) return;
+    akp_snode_t* node = (akp_snode_t*)malloc(sizeof(akp_snode_t));
+    node->data = data;
+    node->next = NULL;
+    if (!list->head) {
+        list->head = node;
+    } else {
+        akp_snode_t* cur = list->head;
+        while (cur->next) cur = cur->next;
+        cur->next = node;
+    }
+    list->size++;
+}
+
+static inline int akp_slist_delete(akp_slist_t* list, int data) {
+    if (!list || !list->head) return 0;
+    akp_snode_t* cur = list->head;
+    akp_snode_t* prev = NULL;
+    while (cur && cur->data != data) {
+        prev = cur;
+        cur = cur->next;
+    }
+    if (!cur) return 0;
+    if (!prev) list->head = cur->next;
+    else prev->next = cur->next;
+    free(cur);
+    list->size--;
+    return 1;
+}
+
+static inline void akp_slist_render(const akp_slist_t* list) {
+    if (!list) return;
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "🔗 SINGLY LINKED LIST: %s (Length: %d)\n" AKP_RESET, list->name, list->size);
+    printf("   " AKP_BOLD AKP_NEON_YELLOW "[HEAD]" AKP_RESET);
+    if (!list->head) {
+        printf(" -> " AKP_DIM "NULL\n\n" AKP_RESET);
+        return;
+    }
+    akp_snode_t* cur = list->head;
+    while (cur) {
+        printf(" -> " AKP_BOLD AKP_NEON_CYAN "[ %4d | • ]" AKP_RESET, cur->data);
+        cur = cur->next;
+    }
+    printf(" -> " AKP_DIM "NULL\n\n" AKP_RESET);
+}
+
+static inline void akp_slist_free(akp_slist_t* list) {
+    if (!list) return;
+    akp_snode_t* cur = list->head;
+    while (cur) {
+        akp_snode_t* tmp = cur;
+        cur = cur->next;
+        free(tmp);
+    }
+    free(list);
+}
+
+typedef struct akp_dnode {
+    int data;
+    struct akp_dnode* prev;
+    struct akp_dnode* next;
+} akp_dnode_t;
+
+typedef struct {
+    akp_dnode_t* head;
+    akp_dnode_t* tail;
+    int size;
+    char name[32];
+} akp_dlist_t;
+
+static inline akp_dlist_t* akp_dlist_create(const char* name) {
+    akp_init_console();
+    akp_dlist_t* list = (akp_dlist_t*)malloc(sizeof(akp_dlist_t));
+    if (!list) return NULL;
+    list->head = NULL;
+    list->tail = NULL;
+    list->size = 0;
+    strncpy(list->name, name ? name : "DoublyList", sizeof(list->name) - 1);
+    list->name[sizeof(list->name) - 1] = '\0';
+    return list;
+}
+
+static inline void akp_dlist_insert_tail(akp_dlist_t* list, int data) {
+    if (!list) return;
+    akp_dnode_t* node = (akp_dnode_t*)malloc(sizeof(akp_dnode_t));
+    node->data = data;
+    node->next = NULL;
+    node->prev = list->tail;
+    if (!list->head) {
+        list->head = node;
+        list->tail = node;
+    } else {
+        list->tail->next = node;
+        list->tail = node;
+    }
+    list->size++;
+}
+
+static inline void akp_dlist_render(const akp_dlist_t* list) {
+    if (!list) return;
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_PINK "↔️  DOUBLY LINKED LIST: %s (Length: %d)\n" AKP_RESET, list->name, list->size);
+    printf("   " AKP_BOLD AKP_NEON_YELLOW "[HEAD]" AKP_RESET);
+    if (!list->head) {
+        printf(" <-> " AKP_DIM "NULL\n\n" AKP_RESET);
+        return;
+    }
+    akp_dnode_t* cur = list->head;
+    while (cur) {
+        printf(" <-> " AKP_BOLD AKP_NEON_PINK "[ • | %4d | • ]" AKP_RESET, cur->data);
+        cur = cur->next;
+    }
+    printf(" <-> " AKP_BOLD AKP_NEON_YELLOW "[TAIL]\n\n" AKP_RESET);
+}
+
+static inline void akp_dlist_free(akp_dlist_t* list) {
+    if (!list) return;
+    akp_dnode_t* cur = list->head;
+    while (cur) {
+        akp_dnode_t* tmp = cur;
+        cur = cur->next;
+        free(tmp);
+    }
+    free(list);
+}
+
+/* ============================================================================
+ * [27] DIJKSTRA SHORTEST PATH ANALYSIS
+ * ============================================================================ */
+
+#define AKP_INF 999999
+
+typedef struct {
+    int dist[AKP_GRAPH_MAX_VERTICES];
+    int parent[AKP_GRAPH_MAX_VERTICES];
+    int visited[AKP_GRAPH_MAX_VERTICES];
+    int vertices;
+    int source;
+} akp_dijkstra_t;
+
+static inline akp_dijkstra_t akp_dijkstra_solve(const akp_graph_t* g, int source) {
+    akp_dijkstra_t res;
+    res.vertices = g ? g->vertices : 0;
+    res.source = source;
+    if (!g || source < 0 || source >= g->vertices) return res;
+
+    for (int i = 0; i < g->vertices; i++) {
+        res.dist[i] = AKP_INF;
+        res.visited[i] = 0;
+        res.parent[i] = -1;
+    }
+    res.dist[source] = 0;
+
+    for (int count = 0; count < g->vertices - 1; count++) {
+        int min_dist = AKP_INF;
+        int u = -1;
+        for (int v = 0; v < g->vertices; v++) {
+            if (!res.visited[v] && res.dist[v] <= min_dist) {
+                min_dist = res.dist[v];
+                u = v;
+            }
+        }
+        if (u == -1 || min_dist == AKP_INF) break;
+        res.visited[u] = 1;
+
+        for (int v = 0; v < g->vertices; v++) {
+            if (!res.visited[v] && g->adj[u][v] > 0 && res.dist[u] != AKP_INF
+                && res.dist[u] + g->adj[u][v] < res.dist[v]) {
+                res.dist[v] = res.dist[u] + g->adj[u][v];
+                res.parent[v] = u;
+            }
+        }
+    }
+    return res;
+}
+
+static inline void akp_dijkstra_print_path(const akp_dijkstra_t* res, int j) {
+    if (res->parent[j] == -1) {
+        printf("V%d", j);
+        return;
+    }
+    akp_dijkstra_print_path(res, res->parent[j]);
+    printf(" -> V%d", j);
+}
+
+static inline void akp_dijkstra_render(const akp_dijkstra_t* res) {
+    if (!res) return;
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_GREEN "╔═════════════════════════════════════════════════════════════════════════╗\n" AKP_RESET);
+    printf(AKP_BOLD AKP_NEON_GREEN "║ 🛣️  DIJKSTRA SHORTEST PATH ANALYSIS (Source: V%-2d)                      ║\n" AKP_RESET, res->source);
+    printf(AKP_BOLD AKP_NEON_GREEN "╠═════════════════════════════════════════════════════════════════════════╣\n" AKP_RESET);
+    printf("║ Destination │ Shortest Cost │ Full Route Sequence                     ║\n");
+    printf(AKP_BOLD AKP_NEON_GREEN "╠═════════════╪═══════════════╪═════════════════════════════════════════╣\n" AKP_RESET);
+    for (int i = 0; i < res->vertices; i++) {
+        if (res->dist[i] == AKP_INF) {
+            printf("║ V%-10d │ " AKP_DIM "UNREACHABLE " AKP_RESET "│ (No directed path)                    ║\n", i);
+        } else {
+            printf("║ V%-10d │ " AKP_BOLD AKP_NEON_GOLD "%13d" AKP_RESET " │ ", i, res->dist[i]);
+            akp_dijkstra_print_path(res, i);
+            printf("\n");
+        }
+    }
+    printf(AKP_BOLD AKP_NEON_GREEN "╚═════════════╧═══════════════╧═════════════════════════════════════════╝\n\n" AKP_RESET);
+}
+
+/* ============================================================================
+ * [28] STRING PATTERN MATCHING (NAIVE & KMP)
+ * ============================================================================ */
+
+static inline int akp_search_naive_pattern(const char* text, const char* pattern) {
+    if (!text || !pattern) return -1;
+    akp_init_console();
+    size_t n = strlen(text);
+    size_t m = strlen(pattern);
+    if (m == 0 || m > n) return -1;
+
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "🔤 NAIVE PATTERN SEARCH: \"%s\" in \"%s\"\n" AKP_RESET, pattern, text);
+    printf(AKP_DIM "----------------------------------------------------------------------\n" AKP_RESET);
+
+    int comparisons = 0;
+    for (size_t i = 0; i <= n - m; i++) {
+        size_t j;
+        for (j = 0; j < m; j++) {
+            comparisons++;
+            if (text[i + j] != pattern[j]) break;
+        }
+        if (j == m) {
+            printf(AKP_BOLD AKP_NEON_GREEN "✔ Match found at index %zu after %d comparisons! ✨\n\n" AKP_RESET, i, comparisons);
+            return (int)i;
+        }
+    }
+    printf(AKP_BOLD AKP_NEON_RED "✖ Pattern not found after %d comparisons.\n\n" AKP_RESET, comparisons);
+    return -1;
+}
+
+static inline void akp_kmp_compute_lps(const char* pattern, int* lps, size_t m) {
+    size_t len = 0;
+    lps[0] = 0;
+    size_t i = 1;
+    while (i < m) {
+        if (pattern[i] == pattern[len]) {
+            len++;
+            lps[i] = (int)len;
+            i++;
+        } else {
+            if (len != 0) len = (size_t)lps[len - 1];
+            else { lps[i] = 0; i++; }
+        }
+    }
+}
+
+static inline int akp_search_kmp(const char* text, const char* pattern) {
+    if (!text || !pattern) return -1;
+    akp_init_console();
+    size_t n = strlen(text);
+    size_t m = strlen(pattern);
+    if (m == 0 || m > n) return -1;
+
+    int* lps = (int*)malloc(sizeof(int) * m);
+    if (!lps) return -1;
+    akp_kmp_compute_lps(pattern, lps, m);
+
+    printf("\n" AKP_BOLD AKP_NEON_PINK "⚡ KMP ALGORITHM SEARCH: \"%s\" (Length: %zu)\n" AKP_RESET, pattern, m);
+    printf("   Computed LPS Table: ");
+    for (size_t k = 0; k < m; k++) printf("[%c: %d] ", pattern[k], lps[k]);
+    printf("\n");
+
+    size_t i = 0, j = 0;
+    int comparisons = 0;
+    while (i < n) {
+        comparisons++;
+        if (pattern[j] == text[i]) { j++; i++; }
+        if (j == m) {
+            int match_idx = (int)(i - j);
+            printf(AKP_BOLD AKP_NEON_GREEN "✨ KMP MATCH LOCATED at index %d in %d comparisons (Time: O(N))!\n\n" AKP_RESET,
+                   match_idx, comparisons);
+            free(lps);
+            return match_idx;
+        } else if (i < n && pattern[j] != text[i]) {
+            if (j != 0) j = (size_t)lps[j - 1];
+            else i++;
+        }
+    }
+    printf(AKP_BOLD AKP_NEON_RED "✖ KMP search: Pattern not found in text.\n\n" AKP_RESET);
+    free(lps);
+    return -1;
 }
 
 #ifdef __cplusplus

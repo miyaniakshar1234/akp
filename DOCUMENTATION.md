@@ -1,7 +1,7 @@
 # ⚡ AKP ENGINE: THE DEFINITIVE ARCHITECTURAL MANUAL
 ### *Master Documentation of the High-Performance Flashy C/C++ Toolkit*
 **Engineered & Authored by the Genius Architect: Akshar Miyani**  
-*AKP Studio Systems Architecture | Version 1.4.0 (Silent Audio Engine)*
+*AKP Studio Systems Architecture | Version 1.5.0 (Silent Audio Engine)*
 
 ---
 
@@ -25,9 +25,9 @@ Standard C (`<stdio.h>`) has remained visually static since 1972. In modern deve
 ```
 d:/Projects/AKP/
 ├── include/
-│   ├── akp.h                   # Standalone Amalgamated Master Header (v1.4.0)
+│   ├── akp.h                   # Standalone Amalgamated Master Header (v1.5.0)
 │   ├── akp.hpp                 # Modern C++17/20 STL & RAII Master Wrapper
-│   └── akp/                    # Modular Header Suite (24 Subsystems)
+│   └── akp/                    # Modular Header Suite (28 Subsystems)
 │       ├── akp.h               # Root Modular Umbrella Header
 │       ├── color.h             # 24-Bit TrueColor RGB, ANSI, Linear Gradients
 │       ├── banner.h            # ASCII Branding Splash & Lab Evaluation Stamp
@@ -51,15 +51,20 @@ d:/Projects/AKP/
 │       ├── stack_queue.h       # Visual LIFO Stack & Circular FIFO Queue
 │       ├── search_anim.h       # Step-by-Step Visual Linear & Binary Search
 │       ├── graph.h             # Graph Adjacency Matrix & BFS/DFS Traversals
-│       └── theme.h             # Cyberpunk, Matrix, Dracula, Synthwave Themes
+│       ├── theme.h             # Cyberpunk, Matrix, Dracula, Synthwave Themes
+│       ├── hash_table.h        # Visual Hash Table with Chaining & Collision Audit
+│       ├── linked_list.h       # Visual Singly & Doubly Linked List Node Diagrams
+│       ├── dijkstra.h          # Dijkstra Single-Source Shortest Path Router
+│       └── pattern_match.h     # Naive & KMP Pattern Matching Visualizer
 ├── examples/
 │   ├── lab_demo.c              # Comprehensive C Lab Demonstration
 │   ├── cpp_demo.cpp            # Modern C++17 STL Benchmark & Visualizer
 │   ├── cpp_advanced.cpp        # Modern C++ RAII Canvas & Table Demo
 │   ├── lab_showcase_v130.c     # Live Showcase: Sorting, Telemetry, Melodies
-│   └── lab_showcase_v140.c     # v1.4.0 Showcase: Stack, Queue, Search, Graph
+│   ├── lab_showcase_v140.c     # v1.4.0 Showcase: Stack, Queue, Search, Graph
+│   └── lab_showcase_v150.c     # v1.5.0 Showcase: Hash Table, Lists, Dijkstra, KMP
 ├── tests/
-│   └── test_suite.c            # Automated 31/31 Test Suite (100% Pass Rate)
+│   └── test_suite.c            # Automated 45/45 Test Suite (100% Pass Rate)
 ├── cmake/
 │   └── AKPConfig.cmake.in      # Modern CMake Package Export
 ├── ports/akp/                  # Official vcpkg Port Definition
@@ -362,6 +367,55 @@ Provides dynamic visual containers with overflow/underflow protection, capacity 
 #### Functions:
 - `akp_theme_get(id)`: Returns theme palette struct for `AKP_THEME_CYBERPUNK`, `AKP_THEME_MATRIX`, `AKP_THEME_SYNTHWAVE`, `AKP_THEME_DRACULA`, `AKP_THEME_MONOKAI`.
 - `akp_theme_preview(id)`: Renders swatch preview of primary, secondary, and accent TrueColors.
+
+---
+
+### 3.25. Visual Hash Table with Chaining (`akp/hash_table.h`)
+
+#### Internal Mechanism:
+Solves the fundamental data structures problem of hash collision visualization. Uses separate chaining with linked list buckets, djb2/modulo hash calculation, and real-time collision auditing.
+- `akp_ht_t* akp_ht_create(int num_buckets)`: Allocates hash table with dynamically bounded bucket array.
+- `bool akp_ht_insert(akp_ht_t* ht, const char* key, int value)`: Inserts key-value pair, updating existing keys or appending to bucket chain.
+- `bool akp_ht_get(akp_ht_t* ht, const char* key, int* out_val)`: Lookups key with $O(1)$ average time complexity.
+- `void akp_ht_render(const akp_ht_t* ht, const char* title)`: Renders full bucket diagram with arrows (`Bucket[i] -> [key: val] -> [key: val]`), collision count, max chain depth, and load factor ($\alpha = N / B$).
+- `void akp_ht_destroy(akp_ht_t* ht)`: Fully deallocates bucket chains and table structure.
+
+---
+
+### 3.26. Visual Singly & Doubly Linked Lists (`akp/linked_list.h`)
+
+#### Internal Mechanism:
+Renders dynamic memory node chains in full ASCII/Unicode with pointer arrows, element values, and node indices.
+- **Singly Linked List (`akp_slist_t`)**:
+  - `akp_slist_create()`, `akp_slist_destroy(list)`: Safe lifecycle allocation.
+  - `akp_slist_push_front(list, val)`, `akp_slist_push_back(list, val)`: Head and tail insertion.
+  - `akp_slist_render(list, title)`: Renders directional pointer chain: `[HEAD] -> [ 10 | • ] -> [ 25 | • ] -> [ 50 | • ] -> [NULL]`.
+- **Doubly Linked List (`akp_dlist_t`)**:
+  - `akp_dlist_create()`, `akp_dlist_destroy(list)`: Safe lifecycle allocation.
+  - `akp_dlist_push_front(list, val)`, `akp_dlist_push_back(list, val)`: Bidirectional node insertion.
+  - `akp_dlist_render(list, title)`: Renders bidirectional pointer chain: `[HEAD] <-> [ • | 10 | • ] <-> [ • | 25 | • ] <-> [TAIL]`.
+
+---
+
+### 3.27. Dijkstra Shortest Path Visualizer (`akp/dijkstra.h`)
+
+#### Internal Mechanism:
+Implements Single-Source Shortest Path (SSSP) on weighted non-negative graphs. Tracks distances, visitation sets, and parent nodes for complete path reconstruction.
+- `akp_dijkstra_res_t akp_dijkstra_solve(const akp_graph_t* g, int source)`: Executes greedy edge relaxation algorithm and returns distance/predecessor maps.
+- `void akp_dijkstra_render(const akp_graph_t* g, const akp_dijkstra_res_t* res, const char* title)`: Displays single-source distance vector, reconstructed route path strings (e.g., `0 -> 2 -> 3`), edge cost summation, and status badges.
+
+---
+
+### 3.28. String Pattern Matching Visualizer (`akp/pattern_match.h`)
+
+#### Internal Mechanism:
+Provides both brute-force and linear-time algorithmic string matching visualizers.
+- **Naive Search**:
+  - `akp_pattern_res_t akp_pattern_naive(const char* text, const char* pattern)`: Sliding window comparison tracking every character check.
+- **Knuth-Morris-Pratt (KMP)**:
+  - `void akp_kmp_compute_lps(const char* pattern, int* lps)`: Computes Longest Prefix Suffix ($\pi$) array to avoid redundant backtracking.
+  - `akp_pattern_res_t akp_kmp_search(const char* text, const char* pattern)`: Performs $O(N + M)$ pattern search using precomputed LPS shifts.
+  - `void akp_kmp_render(const char* text, const char* pattern, const akp_pattern_res_t* res, const char* title)`: Renders the LPS shift table, text alignment, match indices, and total comparison count.
 
 ---
 

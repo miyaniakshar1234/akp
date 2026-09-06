@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(AKP VERSION 1.4.0 LANGUAGES C CXX)
+project(AKP VERSION 1.5.0 LANGUAGES C CXX)
 
 # Header-only library target
 add_library(akp INTERFACE)
@@ -23,6 +23,9 @@ target_link_libraries(lab_showcase_v130 PRIVATE akp)
 
 add_executable(lab_showcase_v140 examples/lab_showcase_v140.c)
 target_link_libraries(lab_showcase_v140 PRIVATE akp)
+
+add_executable(lab_showcase_v150 examples/lab_showcase_v150.c)
+target_link_libraries(lab_showcase_v150 PRIVATE akp)
 
 # Test Suite target
 enable_testing()
