@@ -1,7 +1,7 @@
 # 📚 AKP ENGINE: COMPLETE API & SUBSYSTEM REFERENCE
 ### *Technical Specification, Function Signatures & Execution Contracts*
 **Architect: Akshar Miyani | AKP Studio**  
-*Release: v1.5.0 | Language Targets: C99, C11, C++17, C++20*
+*Release: v1.6.0 | Language Targets: C99, C11, C++17, C++20*
 
 ---
 
@@ -34,6 +34,10 @@
 26. [Visual Singly & Doubly Linked Lists](#26-visual-singly--doubly-linked-lists)
 27. [Dijkstra Shortest Path Visualizer](#27-dijkstra-shortest-path-visualizer)
 28. [String Pattern Matching Visualizer](#28-string-pattern-matching-visualizer)
+29. [Visual Binary Min-Heap & Priority Queue](#29-visual-binary-min-heap--priority-queue)
+30. [Visual Prefix Tree (Trie) & Autocomplete Engine](#30-visual-prefix-tree-trie--autocomplete-engine)
+31. [Visual Huffman Coding & Data Compression](#31-visual-huffman-coding--data-compression)
+32. [Visual LRU Cache & Buffer Pool Simulator](#32-visual-lru-cache--buffer-pool-simulator)
 
 ---
 
@@ -525,6 +529,91 @@ Header: `<akp/pattern_match.h>` or `<akp.h>`
 
 ### `void akp_kmp_render(const char* text, const char* pattern, const akp_pattern_res_t* res, const char* title)`
 - Displays LPS table, text length, pattern length, match occurrences, and total comparison count.
+
+---
+
+## 29. Visual Binary Min-Heap & Priority Queue
+
+Header: `<akp/min_heap.h>` or `<akp.h>`
+
+### `akp_min_heap_t* akp_min_heap_create(int capacity, const char* name)`
+- Allocates a dynamically resizable binary min-heap buffer.
+- **Complexity**: $O(1)$.
+
+### `bool akp_min_heap_insert(akp_min_heap_t* heap, int val)`
+- Inserts `val` and restores heap property via heapify-up.
+- **Complexity**: $O(\log N)$.
+
+### `bool akp_min_heap_extract_min(akp_min_heap_t* heap, int* out_val)`
+- Extracts root element, relocates tail to root, and restores min-heap property via heapify-down.
+- **Complexity**: $O(\log N)$.
+
+### `int akp_min_heap_peek(const akp_min_heap_t* heap)`
+- Returns root minimum value without extracting.
+- **Complexity**: $O(1)$.
+
+### `void akp_min_heap_render(const akp_min_heap_t* heap, const char* title)`
+- Renders linear array representation with parent indices and hierarchical tree level breakdown.
+
+### `void akp_min_heap_destroy(akp_min_heap_t* heap)`
+- Deallocates dynamic array and heap structure.
+
+---
+
+## 30. Visual Prefix Tree (Trie) & Autocomplete Engine
+
+Header: `<akp/trie.h>` or `<akp.h>`
+
+### `akp_trie_t* akp_trie_create(void)` / `void akp_trie_destroy(akp_trie_t* trie)`
+- Allocates and deallocates 26-way prefix trie.
+
+### `bool akp_trie_insert(akp_trie_t* trie, const char* word)`
+- Inserts lowercase alphabetic word into trie, tracking unique nodes and terminal boundaries.
+- **Complexity**: $O(L)$ where $L$ is word length.
+
+### `bool akp_trie_search(const akp_trie_t* trie, const char* word)`
+- Returns `true` if full word exists in trie.
+- **Complexity**: $O(L)$.
+
+### `bool akp_trie_starts_with(const akp_trie_t* trie, const char* prefix)`
+- Returns `true` if any word in trie begins with `prefix`.
+- **Complexity**: $O(L)$.
+
+### `void akp_trie_render(const akp_trie_t* trie, const char* title)`
+- Renders hierarchical Unicode branch diagram with terminal word markers (`★ (WORD)`).
+
+---
+
+## 31. Visual Huffman Coding & Data Compression
+
+Header: `<akp/huffman.h>` or `<akp.h>`
+
+### `bool akp_huffman_encode(const char* input, akp_huffman_result_t* out_res)`
+- Computes character frequencies, builds greedy binary merge tree, and generates prefix bit codes.
+- **Complexity**: $O(N + U \log U)$ where $N$ is text length and $U$ is unique characters.
+
+### `void akp_huffman_render(const char* input, const akp_huffman_result_t* res, const char* title)`
+- Displays frequency and code mapping table, original bits vs compressed bits, and bandwidth savings percentage.
+
+---
+
+## 32. Visual LRU Cache & Buffer Pool Simulator
+
+Header: `<akp/lru_cache.h>` or `<akp.h>`
+
+### `akp_lru_cache_t* akp_lru_create(int capacity)` / `void akp_lru_destroy(akp_lru_cache_t* cache)`
+- Allocates and frees fixed-capacity LRU cache structure.
+
+### `int akp_lru_get(akp_lru_cache_t* cache, int key)`
+- Lookups key. If present, promotes node to MRU / Head and increments hit counter. Returns value or `-1`.
+- **Complexity**: $O(1)$ average.
+
+### `void akp_lru_put(akp_lru_cache_t* cache, int key, int value)`
+- Inserts or updates key-value pair at MRU / Head. If capacity exceeded, evicts LRU / Tail node.
+- **Complexity**: $O(1)$.
+
+### `void akp_lru_render(const akp_lru_cache_t* cache, const char* title)`
+- Renders cache line order: `[MRU / HEAD] -> [K:v] <-> [K:v] -> [LRU / TAIL]` with occupancy and hit ratio telemetry.
 
 ---
 

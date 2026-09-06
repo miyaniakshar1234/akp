@@ -7,7 +7,7 @@
  *  ██║  ██║██║ ╚██╗██║          ███████╗██║ ╚████║╚██████╔╝██║██║ ╚████║███████╗
  *  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝          ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝╚══════╝
  * ============================================================================
- *  🚀 AKP CORE ENGINE v1.5.0 (Silent Audio Default)
+ *  🚀 AKP CORE ENGINE v1.6.0 (Silent Audio Default)
  *  Author: Akshar Miyani
  *  Identity: AKP Studio / Advanced C & C++ Flashy Development Toolkit
  *  Zero-Dependency | Pure C99/C11 & C++11/14/17/20 Compatible | Cross-Platform
@@ -84,6 +84,7 @@ extern "C" {
 #define AKP_NEON_RED     "\x1b[38;2;255;50;50m"
 #define AKP_FIRE_ORANGE  "\x1b[38;2;255;94;0m"
 #define AKP_DEEP_BLUE    "\x1b[38;2;0;102;255m"
+#define AKP_NEON_BLUE    AKP_DEEP_BLUE
 
 static inline void akp_reset_color(void) {
     printf(AKP_RESET);
@@ -894,6 +895,9 @@ static inline akp_test_suite_t akp_test_suite_begin(const char* name) {
 
 #define AKP_ASSERT_EQ(suite, name, actual, expected) \
     AKP_TEST(suite, name, ((actual) == (expected)))
+
+#define AKP_ASSERT_TRUE(suite, name, condition) \
+    AKP_TEST(suite, name, (condition))
 
 #define AKP_ASSERT_STR_EQ(suite, name, actual, expected) \
     AKP_TEST(suite, name, (strcmp((actual), (expected)) == 0))
@@ -1980,6 +1984,578 @@ static inline int akp_search_kmp(const char* text, const char* pattern) {
     printf(AKP_BOLD AKP_NEON_RED "✖ KMP search: Pattern not found in text.\n\n" AKP_RESET);
     free(lps);
     return -1;
+}
+
+/* ============================================================================
+ * 29. VISUAL BINARY MIN-HEAP & PRIORITY QUEUE
+ * ============================================================================ */
+typedef struct {
+    int* data;
+    int size;
+    int capacity;
+    char name[32];
+} akp_min_heap_t;
+
+static inline akp_min_heap_t* akp_min_heap_create(int capacity, const char* name) {
+    akp_min_heap_t* heap = (akp_min_heap_t*)malloc(sizeof(akp_min_heap_t));
+    if (!heap) return NULL;
+    heap->capacity = capacity > 0 ? capacity : 16;
+    heap->data = (int*)malloc((size_t)heap->capacity * sizeof(int));
+    heap->size = 0;
+    if (name) {
+        strncpy(heap->name, name, sizeof(heap->name) - 1);
+        heap->name[sizeof(heap->name) - 1] = '\0';
+    } else {
+        strcpy(heap->name, "MinHeap");
+    }
+    return heap;
+}
+
+static inline void akp_min_heap_destroy(akp_min_heap_t* heap) {
+    if (!heap) return;
+    if (heap->data) free(heap->data);
+    free(heap);
+}
+
+static inline void akp_min_heap_swap(int* a, int* b) {
+    int tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+static inline bool akp_min_heap_insert(akp_min_heap_t* heap, int val) {
+    if (!heap) return false;
+    if (heap->size >= heap->capacity) {
+        int new_cap = heap->capacity * 2;
+        int* new_data = (int*)realloc(heap->data, (size_t)new_cap * sizeof(int));
+        if (!new_data) return false;
+        heap->data = new_data;
+        heap->capacity = new_cap;
+    }
+    
+    int i = heap->size++;
+    heap->data[i] = val;
+
+    while (i != 0) {
+        int parent = (i - 1) / 2;
+        if (heap->data[parent] > heap->data[i]) {
+            akp_min_heap_swap(&heap->data[parent], &heap->data[i]);
+            i = parent;
+        } else {
+            break;
+        }
+    }
+    return true;
+}
+
+static inline bool akp_min_heap_extract_min(akp_min_heap_t* heap, int* out_val) {
+    if (!heap || heap->size <= 0) return false;
+    if (out_val) *out_val = heap->data[0];
+
+    if (heap->size == 1) {
+        heap->size--;
+        return true;
+    }
+
+    heap->data[0] = heap->data[heap->size - 1];
+    heap->size--;
+
+    int i = 0;
+    while (true) {
+        int left = 2 * i + 1;
+        int right = 2 * i + 2;
+        int smallest = i;
+
+        if (left < heap->size && heap->data[left] < heap->data[smallest]) smallest = left;
+        if (right < heap->size && heap->data[right] < heap->data[smallest]) smallest = right;
+        if (smallest != i) {
+            akp_min_heap_swap(&heap->data[i], &heap->data[smallest]);
+            i = smallest;
+        } else {
+            break;
+        }
+    }
+    return true;
+}
+
+static inline int akp_min_heap_peek(const akp_min_heap_t* heap) {
+    if (!heap || heap->size <= 0) return -1;
+    return heap->data[0];
+}
+
+static inline void akp_min_heap_render(const akp_min_heap_t* heap, const char* title) {
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "╔═══════════════════════════════════════════════════════════════════════════════╗\n");
+    printf("║  🔷 BINARY MIN-HEAP & PRIORITY QUEUE TELEMETRY                                ║\n");
+    printf("╚═══════════════════════════════════════════════════════════════════════════════╝\n" AKP_RESET);
+
+    if (title) {
+        printf(AKP_BOLD AKP_NEON_YELLOW "  ⚡ Heap Name: %s (%s)\n" AKP_RESET, heap ? heap->name : "N/A", title);
+    }
+
+    if (!heap || heap->size == 0) {
+        printf(AKP_BOLD AKP_NEON_RED "  [ Heap is currently EMPTY ]\n\n" AKP_RESET);
+        return;
+    }
+
+    printf(AKP_BOLD AKP_NEON_GREEN "  Elements: %d / %d  |  Min Value (Root): %d\n\n" AKP_RESET, heap->size, heap->capacity, heap->data[0]);
+
+    printf("  Linear Memory Layout (Array Storage):\n  ");
+    for (int i = 0; i < heap->size; i++) {
+        if (i == 0) {
+            printf(AKP_BOLD AKP_NEON_YELLOW "[%d: ROOT(%d)] " AKP_RESET, i, heap->data[i]);
+        } else {
+            int p = (i - 1) / 2;
+            printf(AKP_BOLD AKP_NEON_BLUE "[%d: %d (P:%d)] " AKP_RESET, i, heap->data[i], p);
+        }
+    }
+    printf("\n\n  Binary Tree Level Breakdown:\n");
+    int level = 0, count = 1, idx = 0;
+    while (idx < heap->size) {
+        printf(AKP_BOLD AKP_NEON_PINK "    Level %d: " AKP_RESET, level);
+        for (int c = 0; c < count && idx < heap->size; c++, idx++) {
+            printf(AKP_BOLD "(%d) " AKP_RESET, heap->data[idx]);
+        }
+        printf("\n");
+        level++;
+        count *= 2;
+    }
+    printf("\n");
+}
+
+/* ============================================================================
+ * 30. VISUAL PREFIX TREE (TRIE) & AUTOCOMPLETE ENGINE
+ * ============================================================================ */
+#define AKP_TRIE_ALPHABET_SIZE 26
+
+typedef struct akp_trie_node {
+    struct akp_trie_node* children[AKP_TRIE_ALPHABET_SIZE];
+    bool is_end_of_word;
+    char ch;
+} akp_trie_node_t;
+
+typedef struct {
+    akp_trie_node_t* root;
+    int word_count;
+    int node_count;
+} akp_trie_t;
+
+static inline akp_trie_node_t* akp_trie_node_create(char ch) {
+    akp_trie_node_t* node = (akp_trie_node_t*)malloc(sizeof(akp_trie_node_t));
+    if (!node) return NULL;
+    node->is_end_of_word = false;
+    node->ch = ch;
+    for (int i = 0; i < AKP_TRIE_ALPHABET_SIZE; i++) node->children[i] = NULL;
+    return node;
+}
+
+static inline akp_trie_t* akp_trie_create(void) {
+    akp_trie_t* trie = (akp_trie_t*)malloc(sizeof(akp_trie_t));
+    if (!trie) return NULL;
+    trie->root = akp_trie_node_create('/');
+    trie->word_count = 0;
+    trie->node_count = 1;
+    return trie;
+}
+
+static inline void akp_trie_destroy_nodes(akp_trie_node_t* node) {
+    if (!node) return;
+    for (int i = 0; i < AKP_TRIE_ALPHABET_SIZE; i++) {
+        if (node->children[i]) akp_trie_destroy_nodes(node->children[i]);
+    }
+    free(node);
+}
+
+static inline void akp_trie_destroy(akp_trie_t* trie) {
+    if (!trie) return;
+    if (trie->root) akp_trie_destroy_nodes(trie->root);
+    free(trie);
+}
+
+static inline bool akp_trie_insert(akp_trie_t* trie, const char* word) {
+    if (!trie || !word || !trie->root) return false;
+    akp_trie_node_t* curr = trie->root;
+    int len = (int)strlen(word);
+
+    for (int i = 0; i < len; i++) {
+        char c = (char)tolower((unsigned char)word[i]);
+        if (c < 'a' || c > 'z') continue;
+        int idx = c - 'a';
+
+        if (!curr->children[idx]) {
+            curr->children[idx] = akp_trie_node_create(c);
+            trie->node_count++;
+        }
+        curr = curr->children[idx];
+    }
+
+    if (!curr->is_end_of_word) {
+        curr->is_end_of_word = true;
+        trie->word_count++;
+        return true;
+    }
+    return false;
+}
+
+static inline bool akp_trie_search(const akp_trie_t* trie, const char* word) {
+    if (!trie || !word || !trie->root) return false;
+    akp_trie_node_t* curr = trie->root;
+    int len = (int)strlen(word);
+
+    for (int i = 0; i < len; i++) {
+        char c = (char)tolower((unsigned char)word[i]);
+        if (c < 'a' || c > 'z') continue;
+        int idx = c - 'a';
+        if (!curr->children[idx]) return false;
+        curr = curr->children[idx];
+    }
+    return curr != NULL && curr->is_end_of_word;
+}
+
+static inline bool akp_trie_starts_with(const akp_trie_t* trie, const char* prefix) {
+    if (!trie || !prefix || !trie->root) return false;
+    akp_trie_node_t* curr = trie->root;
+    int len = (int)strlen(prefix);
+
+    for (int i = 0; i < len; i++) {
+        char c = (char)tolower((unsigned char)prefix[i]);
+        if (c < 'a' || c > 'z') continue;
+        int idx = c - 'a';
+        if (!curr->children[idx]) return false;
+        curr = curr->children[idx];
+    }
+    return true;
+}
+
+static inline void akp_trie_print_recursive(const akp_trie_node_t* node, char* prefix, int depth) {
+    if (!node) return;
+    for (int i = 0; i < AKP_TRIE_ALPHABET_SIZE; i++) {
+        if (node->children[i]) {
+            akp_trie_node_t* child = node->children[i];
+            for (int d = 0; d < depth; d++) printf(AKP_DIM "│  " AKP_RESET);
+            printf(AKP_BOLD AKP_NEON_CYAN "└── [%c]" AKP_RESET, child->ch);
+            if (child->is_end_of_word) printf(AKP_BOLD AKP_NEON_YELLOW " ★ (WORD)" AKP_RESET);
+            printf("\n");
+
+            prefix[depth] = child->ch;
+            prefix[depth + 1] = '\0';
+            akp_trie_print_recursive(child, prefix, depth + 1);
+        }
+    }
+}
+
+static inline void akp_trie_render(const akp_trie_t* trie, const char* title) {
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "╔═══════════════════════════════════════════════════════════════════════════════╗\n");
+    printf("║  🌳 PREFIX TREE (TRIE) STRUCTURE & VOCABULARY HIERARCHY                       ║\n");
+    printf("╚═══════════════════════════════════════════════════════════════════════════════╝\n" AKP_RESET);
+
+    if (title) printf(AKP_BOLD AKP_NEON_YELLOW "  ⚡ Vocabulary Group: %s\n" AKP_RESET, title);
+    if (!trie || !trie->root) {
+        printf(AKP_BOLD AKP_NEON_RED "  [ Trie is NULL ]\n\n" AKP_RESET);
+        return;
+    }
+
+    printf(AKP_BOLD AKP_NEON_GREEN "  Total Words: %d  |  Total Nodes: %d  |  Root: '/'\n\n" AKP_RESET, trie->word_count, trie->node_count);
+    char buf[128];
+    buf[0] = '\0';
+    printf(AKP_BOLD AKP_NEON_PINK "  [ROOT] (/)\n" AKP_RESET);
+    akp_trie_print_recursive(trie->root, buf, 0);
+    printf("\n");
+}
+
+/* ============================================================================
+ * 31. VISUAL HUFFMAN CODING & DATA COMPRESSION VISUALIZER
+ * ============================================================================ */
+typedef struct akp_huffman_node {
+    char ch;
+    int freq;
+    struct akp_huffman_node* left;
+    struct akp_huffman_node* right;
+} akp_huffman_node_t;
+
+typedef struct {
+    char ch;
+    char code[32];
+    int freq;
+} akp_huffman_code_t;
+
+typedef struct {
+    akp_huffman_code_t codes[256];
+    int unique_chars;
+    int original_bits;
+    int compressed_bits;
+    double compression_ratio;
+    double savings_percent;
+} akp_huffman_result_t;
+
+static inline akp_huffman_node_t* akp_huffman_create_node(char ch, int freq) {
+    akp_huffman_node_t* node = (akp_huffman_node_t*)malloc(sizeof(akp_huffman_node_t));
+    if (!node) return NULL;
+    node->ch = ch;
+    node->freq = freq;
+    node->left = NULL;
+    node->right = NULL;
+    return node;
+}
+
+static inline void akp_huffman_free_tree(akp_huffman_node_t* root) {
+    if (!root) return;
+    akp_huffman_free_tree(root->left);
+    akp_huffman_free_tree(root->right);
+    free(root);
+}
+
+static inline void akp_huffman_generate_codes(akp_huffman_node_t* root, char* prefix, int depth, akp_huffman_result_t* res) {
+    if (!root) return;
+    if (!root->left && !root->right) {
+        prefix[depth] = '\0';
+        for (int i = 0; i < res->unique_chars; i++) {
+            if (res->codes[i].ch == root->ch) {
+                if (depth == 0) strcpy(res->codes[i].code, "0");
+                else strcpy(res->codes[i].code, prefix);
+                break;
+            }
+        }
+        return;
+    }
+    if (root->left) {
+        prefix[depth] = '0';
+        akp_huffman_generate_codes(root->left, prefix, depth + 1, res);
+    }
+    if (root->right) {
+        prefix[depth] = '1';
+        akp_huffman_generate_codes(root->right, prefix, depth + 1, res);
+    }
+}
+
+static inline bool akp_huffman_encode(const char* input, akp_huffman_result_t* out_res) {
+    if (!input || !out_res) return false;
+    memset(out_res, 0, sizeof(akp_huffman_result_t));
+    int len = (int)strlen(input);
+    if (len == 0) return false;
+
+    int freqs[256] = {0};
+    for (int i = 0; i < len; i++) freqs[(unsigned char)input[i]]++;
+
+    akp_huffman_node_t* forest[256];
+    int forest_size = 0;
+    for (int i = 0; i < 256; i++) {
+        if (freqs[i] > 0) {
+            forest[forest_size] = akp_huffman_create_node((char)i, freqs[i]);
+            out_res->codes[forest_size].ch = (char)i;
+            out_res->codes[forest_size].freq = freqs[i];
+            forest_size++;
+        }
+    }
+    out_res->unique_chars = forest_size;
+
+    while (forest_size > 1) {
+        int min1 = 0, min2 = 1;
+        if (forest[min1]->freq > forest[min2]->freq) {
+            int t = min1; min1 = min2; min2 = t;
+        }
+        for (int i = 2; i < forest_size; i++) {
+            if (forest[i]->freq < forest[min1]->freq) {
+                min2 = min1;
+                min1 = i;
+            } else if (forest[i]->freq < forest[min2]->freq) {
+                min2 = i;
+            }
+        }
+
+        akp_huffman_node_t* parent = akp_huffman_create_node('$', forest[min1]->freq + forest[min2]->freq);
+        parent->left = forest[min1];
+        parent->right = forest[min2];
+
+        forest[min1] = parent;
+        forest[min2] = forest[forest_size - 1];
+        forest_size--;
+    }
+
+    akp_huffman_node_t* root = forest[0];
+    char prefix[64];
+    akp_huffman_generate_codes(root, prefix, 0, out_res);
+    akp_huffman_free_tree(root);
+
+    out_res->original_bits = len * 8;
+    out_res->compressed_bits = 0;
+    for (int i = 0; i < out_res->unique_chars; i++) {
+        out_res->compressed_bits += out_res->codes[i].freq * (int)strlen(out_res->codes[i].code);
+    }
+    if (out_res->original_bits > 0) {
+        out_res->compression_ratio = (double)out_res->original_bits / (double)out_res->compressed_bits;
+        out_res->savings_percent = ((double)(out_res->original_bits - out_res->compressed_bits) / (double)out_res->original_bits) * 100.0;
+    }
+    return true;
+}
+
+static inline void akp_huffman_render(const char* input, const akp_huffman_result_t* res, const char* title) {
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "╔═══════════════════════════════════════════════════════════════════════════════╗\n");
+    printf("║  📦 HUFFMAN OPTIMAL PREFIX CODING & DATA COMPRESSION ENGINE                   ║\n");
+    printf("╚═══════════════════════════════════════════════════════════════════════════════╝\n" AKP_RESET);
+
+    if (title) printf(AKP_BOLD AKP_NEON_YELLOW "  ⚡ Dataset: %s\n" AKP_RESET, title);
+    if (!res || res->unique_chars == 0) {
+        printf(AKP_BOLD AKP_NEON_RED "  [ Empty dataset for Huffman encoding ]\n\n" AKP_RESET);
+        return;
+    }
+
+    printf(AKP_BOLD AKP_NEON_GREEN "  Original Text: \"%s\" (Length: %zu chars)\n" AKP_RESET, input ? input : "N/A", input ? strlen(input) : 0);
+    printf("  Original Size:   %d bits (%d bytes)\n", res->original_bits, res->original_bits / 8);
+    printf("  Compressed Size: %d bits (%.1f bytes)\n", res->compressed_bits, (double)res->compressed_bits / 8.0);
+    printf(AKP_BOLD AKP_NEON_CYAN "  Bandwidth Savings: %.2f%%  |  Ratio: %.2f:1\n\n" AKP_RESET, res->savings_percent, res->compression_ratio);
+
+    printf(AKP_BOLD AKP_NEON_PINK "  ┌───────────┬─────────────┬───────────────────────────┐\n");
+    printf("  │ Character │  Frequency  │  Generated Variable Code  │\n");
+    printf("  ├───────────┼─────────────┼───────────────────────────┤\n" AKP_RESET);
+
+    for (int i = 0; i < res->unique_chars; i++) {
+        char display_c = res->codes[i].ch;
+        if (display_c == ' ') printf("  │  [SPACE]  │ %11d │  ", res->codes[i].freq);
+        else if (display_c == '\n') printf("  │  [NEWL]   │ %11d │  ", res->codes[i].freq);
+        else printf("  │     '%c'   │ %11d │  ", display_c, res->codes[i].freq);
+        printf(AKP_BOLD AKP_NEON_CYAN "%-25s" AKP_RESET, res->codes[i].code);
+        printf("│\n");
+    }
+    printf(AKP_BOLD AKP_NEON_PINK "  └───────────┴─────────────┴───────────────────────────┘\n\n" AKP_RESET);
+}
+
+/* ============================================================================
+ * 32. VISUAL LRU (LEAST RECENTLY USED) CACHE SIMULATOR
+ * ============================================================================ */
+typedef struct akp_lru_node {
+    int key;
+    int value;
+    struct akp_lru_node* prev;
+    struct akp_lru_node* next;
+} akp_lru_node_t;
+
+typedef struct {
+    int capacity;
+    int count;
+    int hits;
+    int misses;
+    akp_lru_node_t* head;
+    akp_lru_node_t* tail;
+} akp_lru_cache_t;
+
+static inline akp_lru_cache_t* akp_lru_create(int capacity) {
+    if (capacity <= 0) capacity = 4;
+    akp_lru_cache_t* cache = (akp_lru_cache_t*)malloc(sizeof(akp_lru_cache_t));
+    if (!cache) return NULL;
+    cache->capacity = capacity;
+    cache->count = 0;
+    cache->hits = 0;
+    cache->misses = 0;
+    cache->head = NULL;
+    cache->tail = NULL;
+    return cache;
+}
+
+static inline void akp_lru_destroy(akp_lru_cache_t* cache) {
+    if (!cache) return;
+    akp_lru_node_t* curr = cache->head;
+    while (curr) {
+        akp_lru_node_t* nxt = curr->next;
+        free(curr);
+        curr = nxt;
+    }
+    free(cache);
+}
+
+static inline void akp_lru_move_to_head(akp_lru_cache_t* cache, akp_lru_node_t* node) {
+    if (!cache || !node || cache->head == node) return;
+    if (node->prev) node->prev->next = node->next;
+    if (node->next) node->next->prev = node->prev;
+    if (cache->tail == node) cache->tail = node->prev;
+
+    node->prev = NULL;
+    node->next = cache->head;
+    if (cache->head) cache->head->prev = node;
+    cache->head = node;
+    if (!cache->tail) cache->tail = node;
+}
+
+static inline int akp_lru_get(akp_lru_cache_t* cache, int key) {
+    if (!cache) return -1;
+    akp_lru_node_t* curr = cache->head;
+    while (curr) {
+        if (curr->key == key) {
+            cache->hits++;
+            akp_lru_move_to_head(cache, curr);
+            return curr->value;
+        }
+        curr = curr->next;
+    }
+    cache->misses++;
+    return -1;
+}
+
+static inline void akp_lru_put(akp_lru_cache_t* cache, int key, int value) {
+    if (!cache) return;
+    akp_lru_node_t* curr = cache->head;
+    while (curr) {
+        if (curr->key == key) {
+            curr->value = value;
+            akp_lru_move_to_head(cache, curr);
+            return;
+        }
+        curr = curr->next;
+    }
+
+    akp_lru_node_t* new_node = (akp_lru_node_t*)malloc(sizeof(akp_lru_node_t));
+    if (!new_node) return;
+    new_node->key = key;
+    new_node->value = value;
+    new_node->prev = NULL;
+    new_node->next = cache->head;
+
+    if (cache->head) cache->head->prev = new_node;
+    cache->head = new_node;
+    if (!cache->tail) cache->tail = new_node;
+    cache->count++;
+
+    if (cache->count > cache->capacity) {
+        akp_lru_node_t* lru = cache->tail;
+        if (lru) {
+            if (lru->prev) lru->prev->next = NULL;
+            cache->tail = lru->prev;
+            free(lru);
+            cache->count--;
+        }
+    }
+}
+
+static inline void akp_lru_render(const akp_lru_cache_t* cache, const char* title) {
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "╔═══════════════════════════════════════════════════════════════════════════════╗\n");
+    printf("║  💾 LRU (LEAST RECENTLY USED) CACHE & BUFFER POOL TELEMETRY                   ║\n");
+    printf("╚═══════════════════════════════════════════════════════════════════════════════╝\n" AKP_RESET);
+
+    if (title) printf(AKP_BOLD AKP_NEON_YELLOW "  ⚡ Cache Domain: %s\n" AKP_RESET, title);
+    if (!cache) {
+        printf(AKP_BOLD AKP_NEON_RED "  [ Cache is NULL ]\n\n" AKP_RESET);
+        return;
+    }
+
+    int total_queries = cache->hits + cache->misses;
+    double hit_ratio = total_queries > 0 ? ((double)cache->hits / (double)total_queries) * 100.0 : 0.0;
+
+    printf(AKP_BOLD AKP_NEON_GREEN "  Capacity: %d | Occupancy: %d / %d | Hits: %d | Misses: %d | Hit Ratio: %.1f%%\n\n" AKP_RESET,
+           cache->capacity, cache->count, cache->capacity, cache->hits, cache->misses, hit_ratio);
+
+    printf("  Cache Line Order (MRU to LRU):\n  ");
+    printf(AKP_BOLD AKP_NEON_YELLOW "[MRU / HEAD] -> " AKP_RESET);
+
+    akp_lru_node_t* curr = cache->head;
+    while (curr) {
+        printf(AKP_BOLD AKP_NEON_CYAN "[K:%d | V:%d]" AKP_RESET, curr->key, curr->value);
+        if (curr->next) printf(AKP_BOLD AKP_NEON_PINK " <-> " AKP_RESET);
+        curr = curr->next;
+    }
+    printf(AKP_BOLD AKP_NEON_RED " -> [LRU / TAIL]\n\n" AKP_RESET);
 }
 
 #ifdef __cplusplus

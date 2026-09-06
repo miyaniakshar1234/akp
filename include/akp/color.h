@@ -64,8 +64,8 @@ extern "C" {
 #define AKP_GOLD         "\x1b[38;2;255;184;0m"
 #define AKP_NEON_GOLD    AKP_GOLD
 #define AKP_NEON_RED     "\x1b[38;2;255;50;50m"
-#define AKP_FIRE_ORANGE  "\x1b[38;2;255;94;0m"
 #define AKP_DEEP_BLUE    "\x1b[38;2;0;102;255m"
+#define AKP_NEON_BLUE    AKP_DEEP_BLUE
 #define AKP_MINT         "\x1b[38;2;0;255;157m"
 #define AKP_ELECTRIC_VIOLET "\x1b[38;2;143;0;255m"
 

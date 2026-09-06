@@ -35,5 +35,9 @@
 #include "linked_list.h"
 #include "dijkstra.h"
 #include "pattern_match.h"
+#include "min_heap.h"
+#include "trie.h"
+#include "huffman.h"
+#include "lru_cache.h"
 
 #endif /* AKP_MODULAR_ROOT_H */

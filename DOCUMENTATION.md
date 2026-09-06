@@ -1,7 +1,7 @@
 # ⚡ AKP ENGINE: THE DEFINITIVE ARCHITECTURAL MANUAL
 ### *Master Documentation of the High-Performance Flashy C/C++ Toolkit*
 **Engineered & Authored by the Genius Architect: Akshar Miyani**  
-*AKP Studio Systems Architecture | Version 1.5.0 (Silent Audio Engine)*
+*AKP Studio Systems Architecture | Version 1.6.0 (Silent Audio Engine)*
 
 ---
 
@@ -25,9 +25,9 @@ Standard C (`<stdio.h>`) has remained visually static since 1972. In modern deve
 ```
 d:/Projects/AKP/
 ├── include/
-│   ├── akp.h                   # Standalone Amalgamated Master Header (v1.5.0)
+│   ├── akp.h                   # Standalone Amalgamated Master Header (v1.6.0)
 │   ├── akp.hpp                 # Modern C++17/20 STL & RAII Master Wrapper
-│   └── akp/                    # Modular Header Suite (28 Subsystems)
+│   └── akp/                    # Modular Header Suite (32 Subsystems)
 │       ├── akp.h               # Root Modular Umbrella Header
 │       ├── color.h             # 24-Bit TrueColor RGB, ANSI, Linear Gradients
 │       ├── banner.h            # ASCII Branding Splash & Lab Evaluation Stamp
@@ -55,16 +55,21 @@ d:/Projects/AKP/
 │       ├── hash_table.h        # Visual Hash Table with Chaining & Collision Audit
 │       ├── linked_list.h       # Visual Singly & Doubly Linked List Node Diagrams
 │       ├── dijkstra.h          # Dijkstra Single-Source Shortest Path Router
-│       └── pattern_match.h     # Naive & KMP Pattern Matching Visualizer
+│       ├── pattern_match.h     # Naive & KMP Pattern Matching Visualizer
+│       ├── min_heap.h          # Binary Min-Heap & Priority Queue Level Visualizer
+│       ├── trie.h              # Visual Prefix Tree (Trie) & Autocomplete Tree
+│       ├── huffman.h           # Huffman Variable Prefix Coding & Compression
+│       └── lru_cache.h         # Visual LRU Cache Buffer Pool & Eviction Monitor
 ├── examples/
 │   ├── lab_demo.c              # Comprehensive C Lab Demonstration
 │   ├── cpp_demo.cpp            # Modern C++17 STL Benchmark & Visualizer
 │   ├── cpp_advanced.cpp        # Modern C++ RAII Canvas & Table Demo
 │   ├── lab_showcase_v130.c     # Live Showcase: Sorting, Telemetry, Melodies
 │   ├── lab_showcase_v140.c     # v1.4.0 Showcase: Stack, Queue, Search, Graph
-│   └── lab_showcase_v150.c     # v1.5.0 Showcase: Hash Table, Lists, Dijkstra, KMP
+│   ├── lab_showcase_v150.c     # v1.5.0 Showcase: Hash Table, Lists, Dijkstra, KMP
+│   └── lab_showcase_v160.c     # v1.6.0 Showcase: Min-Heap, Trie, Huffman, LRU Cache
 ├── tests/
-│   └── test_suite.c            # Automated 45/45 Test Suite (100% Pass Rate)
+│   └── test_suite.c            # Automated 61/61 Test Suite (100% Pass Rate)
 ├── cmake/
 │   └── AKPConfig.cmake.in      # Modern CMake Package Export
 ├── ports/akp/                  # Official vcpkg Port Definition
@@ -416,6 +421,57 @@ Provides both brute-force and linear-time algorithmic string matching visualizer
   - `void akp_kmp_compute_lps(const char* pattern, int* lps)`: Computes Longest Prefix Suffix ($\pi$) array to avoid redundant backtracking.
   - `akp_pattern_res_t akp_kmp_search(const char* text, const char* pattern)`: Performs $O(N + M)$ pattern search using precomputed LPS shifts.
   - `void akp_kmp_render(const char* text, const char* pattern, const akp_pattern_res_t* res, const char* title)`: Renders the LPS shift table, text alignment, match indices, and total comparison count.
+
+---
+
+### 3.29. Visual Binary Min-Heap & Priority Queue (`akp/min_heap.h`)
+
+#### Internal Mechanism:
+Maintains complete binary tree min-heap invariant where parent $\le$ children.
+- `akp_min_heap_t* akp_min_heap_create(int capacity, const char* name)`: Allocates dynamically resizable heap buffer.
+- `bool akp_min_heap_insert(akp_min_heap_t* heap, int val)`: Appends value and executes heapify-up ($O(\log N)$).
+- `bool akp_min_heap_extract_min(akp_min_heap_t* heap, int* out_val)`: Extracts root and executes heapify-down ($O(\log N)$).
+- `int akp_min_heap_peek(const akp_min_heap_t* heap)`: Accesses min element ($O(1)$).
+- `void akp_min_heap_render(const akp_min_heap_t* heap, const char* title)`: Displays contiguous array storage with parent index pointers `[i: val (P:p)]` alongside hierarchical level breakdown.
+- `void akp_min_heap_destroy(akp_min_heap_t* heap)`: Frees heap allocations.
+
+---
+
+### 3.30. Visual Prefix Tree (Trie) & Autocomplete (`akp/trie.h`)
+
+#### Internal Mechanism:
+Implements 26-way prefix search tree for fast lexical operations and dictionary validation.
+- `akp_trie_t* akp_trie_create(void)`: Allocates root trie node (`/`).
+- `bool akp_trie_insert(akp_trie_t* trie, const char* word)`: Inserts characters into 26-ary branch trie, marking word boundaries.
+- `bool akp_trie_search(const akp_trie_t* trie, const char* word)`: Validates full word existence ($O(L)$ where $L$ is word length).
+- `bool akp_trie_starts_with(const akp_trie_t* trie, const char* prefix)`: Validates prefix existence ($O(L)$).
+- `void akp_trie_render(const akp_trie_t* trie, const char* title)`: Renders complete Unicode branch hierarchy with word markers (`★ (WORD)`).
+- `void akp_trie_destroy(akp_trie_t* trie)`: Recursively cleans up all allocated branch nodes.
+
+---
+
+### 3.31. Huffman Variable Prefix Coding & Compression (`akp/huffman.h`)
+
+#### Internal Mechanism:
+Implements the greedy Huffman algorithm for optimal lossless data compression.
+- Computes character frequency distribution across input strings.
+- Iteratively fuses lowest-frequency node pairs to construct optimal prefix binary trees.
+- Generates variable-length bit strings (shortest codes for highest frequency symbols).
+- `bool akp_huffman_encode(const char* input, akp_huffman_result_t* out_res)`: Computes codes, total original bits, compressed bits, compression ratio, and savings percentage.
+- `void akp_huffman_render(const char* input, const akp_huffman_result_t* res, const char* title)`: Displays full ASCII code mapping table and bandwidth savings telemetry.
+
+---
+
+### 3.32. Visual LRU Cache & Buffer Pool Simulator (`akp/lru_cache.h`)
+
+#### Internal Mechanism:
+Simulates Operating Systems virtual memory page replacement and high-performance database buffer caches.
+- Implements doubly linked list combined with hash lookups to achieve $O(1)$ query and insertion.
+- `akp_lru_cache_t* akp_lru_create(int capacity)`: Allocates cache with fixed capacity.
+- `int akp_lru_get(akp_lru_cache_t* cache, int key)`: Lookups key, promotes accessed node to `Head` (Most Recently Used - MRU), and tracks cache hit/miss telemetry.
+- `void akp_lru_put(akp_lru_cache_t* cache, int key, int value)`: Inserts key-value pair at `Head`. On capacity overflow, evicts `Tail` (Least Recently Used - LRU).
+- `void akp_lru_render(const akp_lru_cache_t* cache, const char* title)`: Renders bidirectional cache line diagram: `[MRU / HEAD] -> [K:v] <-> [K:v] -> [LRU / TAIL]`.
+- `void akp_lru_destroy(akp_lru_cache_t* cache)`: Safely deallocates cache list.
 
 ---
 

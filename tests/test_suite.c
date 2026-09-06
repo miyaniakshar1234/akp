@@ -166,6 +166,50 @@ int main(void) {
     AKP_ASSERT_EQ(suite, "Pattern: Naive Match Index (10)", naive_idx, 10);
     AKP_ASSERT_EQ(suite, "Pattern: KMP Match Index (10)", kmp_idx, 10);
 
+    /* Test 19: Min-Heap & Priority Queue */
+    akp_min_heap_t* h = akp_min_heap_create(8, "TestHeap");
+    AKP_ASSERT_TRUE(suite, "MinHeap: Created Successfully", h != NULL);
+    akp_min_heap_insert(h, 50);
+    akp_min_heap_insert(h, 20);
+    akp_min_heap_insert(h, 10);
+    akp_min_heap_insert(h, 30);
+    AKP_ASSERT_EQ(suite, "MinHeap: Peek Root Value (10)", akp_min_heap_peek(h), 10);
+    int ext_min = 0;
+    akp_min_heap_extract_min(h, &ext_min);
+    AKP_ASSERT_EQ(suite, "MinHeap: Extracted Min Value (10)", ext_min, 10);
+    AKP_ASSERT_EQ(suite, "MinHeap: New Root Value After Heapify (20)", akp_min_heap_peek(h), 20);
+    akp_min_heap_destroy(h);
+
+    /* Test 20: Prefix Tree (Trie) */
+    akp_trie_t* tr = akp_trie_create();
+    AKP_ASSERT_TRUE(suite, "Trie: Created Successfully", tr != NULL);
+    akp_trie_insert(tr, "cat");
+    akp_trie_insert(tr, "car");
+    akp_trie_insert(tr, "cart");
+    AKP_ASSERT_TRUE(suite, "Trie: Search Existing Word 'car'", akp_trie_search(tr, "car"));
+    AKP_ASSERT_TRUE(suite, "Trie: Search Non-Existing Word 'card'", !akp_trie_search(tr, "card"));
+    AKP_ASSERT_TRUE(suite, "Trie: Prefix Check 'ca'", akp_trie_starts_with(tr, "ca"));
+    akp_trie_destroy(tr);
+
+    /* Test 21: Huffman Coding & Compression */
+    akp_huffman_result_t hres;
+    bool h_ok = akp_huffman_encode("AAAAABBBCCDD", &hres);
+    AKP_ASSERT_TRUE(suite, "Huffman: Encode Successful", h_ok);
+    AKP_ASSERT_EQ(suite, "Huffman: Unique Characters Count (4)", hres.unique_chars, 4);
+    AKP_ASSERT_TRUE(suite, "Huffman: Compression Reduced Bits", hres.compressed_bits < hres.original_bits);
+    AKP_ASSERT_TRUE(suite, "Huffman: Positive Savings Ratio", hres.savings_percent > 0.0);
+
+    /* Test 22: LRU Cache Simulator */
+    akp_lru_cache_t* lru = akp_lru_create(2);
+    AKP_ASSERT_TRUE(suite, "LRU: Created Successfully", lru != NULL);
+    akp_lru_put(lru, 1, 100);
+    akp_lru_put(lru, 2, 200);
+    AKP_ASSERT_EQ(suite, "LRU: Cache Get Key 1 (100)", akp_lru_get(lru, 1), 100);
+    akp_lru_put(lru, 3, 300); /* Evicts Key 2 */
+    AKP_ASSERT_EQ(suite, "LRU: Cache Get Evicted Key 2 (-1)", akp_lru_get(lru, 2), -1);
+    AKP_ASSERT_EQ(suite, "LRU: Cache Get Key 3 (300)", akp_lru_get(lru, 3), 300);
+    akp_lru_destroy(lru);
+
     /* End Suite & Summary */
     return akp_test_suite_end(&suite);
 }
