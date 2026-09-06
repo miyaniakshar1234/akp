@@ -261,6 +261,70 @@ int main(void) {
     AKP_ASSERT_EQ(suite, "Bitset: Popcount After Flip (2)", akp_bitset_count(bs), 2);
     akp_bitset_destroy(bs);
 
+    /* Test 27: Topological Sort */
+    akp_graph_t* tg = akp_graph_create(4, 1);
+    akp_graph_add_edge(tg, 0, 1, 1);
+    akp_graph_add_edge(tg, 0, 2, 1);
+    akp_graph_add_edge(tg, 1, 3, 1);
+    akp_graph_add_edge(tg, 2, 3, 1);
+    akp_toposort_result_t topo = akp_toposort_solve(tg);
+    AKP_ASSERT_TRUE(suite, "TopoSort: DAG Has No Cycles", !topo.has_cycle);
+    AKP_ASSERT_EQ(suite, "TopoSort: All Vertices Ordered (4)", topo.count, 4);
+    AKP_ASSERT_EQ(suite, "TopoSort: Root Vertex First (0)", topo.order[0], 0);
+    AKP_ASSERT_EQ(suite, "TopoSort: Sink Vertex Last (3)", topo.order[3], 3);
+    akp_graph_free(tg);
+
+    /* Test 27b: Topological Sort Cycle Detection */
+    akp_graph_t* cg = akp_graph_create(3, 1);
+    akp_graph_add_edge(cg, 0, 1, 1);
+    akp_graph_add_edge(cg, 1, 2, 1);
+    akp_graph_add_edge(cg, 2, 0, 1);
+    akp_toposort_result_t cyc_res = akp_toposort_solve(cg);
+    AKP_ASSERT_TRUE(suite, "TopoSort: Cycle Detected Correctly", cyc_res.has_cycle);
+    akp_graph_free(cg);
+
+    /* Test 28: Floyd-Warshall All-Pairs Shortest Path */
+    akp_graph_t* fg = akp_graph_create(4, 1);
+    akp_graph_add_edge(fg, 0, 1, 1);
+    akp_graph_add_edge(fg, 1, 2, 2);
+    akp_graph_add_edge(fg, 2, 3, 3);
+    akp_graph_add_edge(fg, 0, 3, 10);
+    akp_floyd_result_t floyd = akp_floyd_solve(fg);
+    AKP_ASSERT_TRUE(suite, "FloydWarshall: Solved Successfully", !floyd.has_negative_cycle);
+    AKP_ASSERT_EQ(suite, "FloydWarshall: Optimal Path V0->V3 (6)", floyd.dist[0][3], 6);
+    AKP_ASSERT_EQ(suite, "FloydWarshall: Subpath V1->V3 (5)", floyd.dist[1][3], 5);
+    int fpath[AKP_GRAPH_MAX_VERTICES];
+    int fpath_len = akp_floyd_get_path(&floyd, 0, 3, fpath);
+    AKP_ASSERT_EQ(suite, "FloydWarshall: Path Reconstruction Length (4)", fpath_len, 4);
+    AKP_ASSERT_EQ(suite, "FloydWarshall: Reconstructed Intermediate Node 1", fpath[1], 1);
+    akp_graph_free(fg);
+
+    /* Test 29: Probabilistic Bloom Filter */
+    akp_bloom_t* bf = akp_bloom_create(128, 3);
+    AKP_ASSERT_TRUE(suite, "BloomFilter: Created Successfully", bf != NULL);
+    akp_bloom_add(bf, "apple");
+    akp_bloom_add(bf, "banana");
+    akp_bloom_add(bf, "cherry");
+    AKP_ASSERT_TRUE(suite, "BloomFilter: Contains 'apple'", akp_bloom_check(bf, "apple"));
+    AKP_ASSERT_TRUE(suite, "BloomFilter: Contains 'banana'", akp_bloom_check(bf, "banana"));
+    AKP_ASSERT_TRUE(suite, "BloomFilter: Contains 'cherry'", akp_bloom_check(bf, "cherry"));
+    AKP_ASSERT_TRUE(suite, "BloomFilter: Does Not Contain 'dragonfruit'", !akp_bloom_check(bf, "dragonfruit"));
+    AKP_ASSERT_TRUE(suite, "BloomFilter: Non-Zero Set Bits Count", akp_bloom_bits_set(bf) > 0);
+    akp_bloom_destroy(bf);
+
+    /* Test 30: Linear Memory Arena */
+    akp_arena_t* arena = akp_arena_create(1024);
+    AKP_ASSERT_TRUE(suite, "Arena: Created Successfully", arena != NULL);
+    int* p1 = (int*)akp_arena_alloc(arena, 32);
+    AKP_ASSERT_TRUE(suite, "Arena: First Allocation Non-Null", p1 != NULL);
+    AKP_ASSERT_EQ(suite, "Arena: Alloc Count is 1", arena->alloc_count, 1);
+    AKP_ASSERT_TRUE(suite, "Arena: Offset Advances", arena->offset >= 32);
+    akp_arena_reset(arena);
+    AKP_ASSERT_EQ(suite, "Arena: Reset Offset to 0", arena->offset, 0);
+    AKP_ASSERT_EQ(suite, "Arena: Reset Alloc Count to 0", arena->alloc_count, 0);
+    akp_arena_destroy(arena);
+
     /* End Suite & Summary */
     return akp_test_suite_end(&suite);
 }
+

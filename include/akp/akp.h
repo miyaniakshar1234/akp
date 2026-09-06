@@ -43,5 +43,9 @@
 #include "kruskal.h"
 #include "ring_buffer.h"
 #include "bitset.h"
+#include "toposort.h"
+#include "floyd_warshall.h"
+#include "bloom_filter.h"
+#include "arena.h"
 
 #endif /* AKP_MODULAR_ROOT_H */
