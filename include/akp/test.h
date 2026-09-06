@@ -55,6 +55,9 @@ static inline akp_test_suite_t akp_test_suite_begin(const char* name) {
 #define AKP_ASSERT_EQ(suite, name, actual, expected) \
     AKP_TEST(suite, name, ((actual) == (expected)))
 
+#define AKP_ASSERT_TRUE(suite, name, condition) \
+    AKP_TEST(suite, name, (condition))
+
 #define AKP_ASSERT_STR_EQ(suite, name, actual, expected) \
     AKP_TEST(suite, name, (strcmp((actual), (expected)) == 0))
 

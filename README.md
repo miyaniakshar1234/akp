@@ -46,6 +46,10 @@ Standard C (`<stdio.h>`) outputs plain, black-and-white text. **`AKP`** turns yo
 - ⏱️ **Micro-Benchmark Timer**: Microsecond/nanosecond block execution timers (`AKP_BENCHMARK("Quicksort") { ... }`).
 - 🔇 **Silent Audio Engine (0dB Default)**: 100% silent execution by default to eliminate computer lab and classroom disruption.
 - 📦 **Visual LIFO Stack & Circular Queue**: In-terminal vertical stack with `TOP ->` / `BOT ->` pointers, load gauge bar, and circular FIFO queues with `F` / `R` markers.
+- 🔷 **Visual Binary Min-Heap & Priority Queue**: Real-time heap array layout, parent/child index pointers, level-by-level binary tree structure, and extract-min heapify-down telemetry (`akp_min_heap_render`).
+- 🌳 **Visual Prefix Tree (Trie) & Autocomplete**: Character branch tree diagrams (`└── [a]`), terminal word markers (`★ (WORD)`), word search, and prefix matching (`akp_trie_render`).
+- 📦 **Visual Huffman Optimal Prefix Coding**: Greedy frequency tree generation, variable-length bit codes, and bandwidth compression savings percentage metrics (`akp_huffman_render`).
+- 💾 **Visual LRU Cache & Buffer Pool Simulator**: Dual hash/list cache lines (`[MRU / HEAD] <-> ... <-> [LRU / TAIL]`), hit/miss ratios, and automatic eviction mechanics (`akp_lru_render`).
 - 🗝️ **Visual Hash Table with Chaining**: Collision tracking, linked bucket visualization, and load factor calculation (`akp_hash_table_render`).
 - 🔗 **Visual Singly & Doubly Linked Lists**: Dynamic ASCII pointer diagrams (`[HEAD] -> [ 10 | • ] -> [NULL]`) and bidirectional links (`<-> [ • | 10 | • ] <->`).
 - 🗺️ **Dijkstra Shortest Path Visualizer**: Single-source shortest path execution on weighted graphs, minimum distance array, and routing paths table (`akp_dijkstra_render`).
@@ -57,7 +61,7 @@ Standard C (`<stdio.h>`) outputs plain, black-and-white text. **`AKP`** turns yo
 - 🌳 **Hierarchical Binary Tree Visualizer**: Horizontal branch layout (`┌──`, `│`, `└──`) for binary search trees and heaps.
 - 📐 **2D Function Plotter & Sparklines**: Rasterizes mathematical functions, complexity curves, and 8-level Unicode sparklines (` ▂▃▄▅▆▇█`).
 - 🎨 **2D Geometric Terminal Canvas**: In-terminal vector canvas drawing lines (Bresenham's algorithm), rectangles, circles, and text.
-- 🧪 **Micro Unit-Testing Framework**: Macro-based test suite (`AKP_TEST`, `AKP_ASSERT_EQ`) with pass-rate audits (45/45 passing).
+- 🧪 **Micro Unit-Testing Framework**: Macro-based test suite (`AKP_TEST`, `AKP_ASSERT_EQ`) with pass-rate audits (61/61 passing).
 - 🎬 **Real-Time Live Sorting Animator**: Watch Bubble, Selection, and Insertion sorts animate directly in your console with in-place frame redraws!
 - 💻 **Hardware Telemetry Dashboard**: Live CPU architecture, core count, total RAM, free RAM, and graphical memory gauge bar (`akp_sysinfo_render`).
 - 📋 **Interactive Form Wizard**: Bordered dialogs capturing multi-type user inputs (text, numbers, confirmation checks).

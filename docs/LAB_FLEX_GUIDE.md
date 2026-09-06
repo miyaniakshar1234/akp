@@ -343,9 +343,115 @@ int main(void) {
 
 ---
 
+### 📌 Recipe 11: Binary Min-Heap & Priority Queue
+
+Displaying contiguous heap array layout alongside tree levels:
+
+```c
+#include "akp.h"
+
+int main(void) {
+    akp_banner();
+    akp_stamp("Practical Lab #15: Binary Min-Heap Priority Queue");
+
+    akp_min_heap_t* h = akp_min_heap_create(8, "TaskQueue");
+    akp_min_heap_insert(h, 45);
+    akp_min_heap_insert(h, 20);
+    akp_min_heap_insert(h, 14);
+    akp_min_heap_insert(h, 12);
+    akp_min_heap_render(h, "Min-Heap Insertion State");
+
+    int min_val = 0;
+    akp_min_heap_extract_min(h, &min_val);
+    akp_log_success("HEAP", "Extracted Min: %d", min_val);
+    akp_min_heap_render(h, "State After Extract-Min");
+
+    akp_min_heap_destroy(h);
+    return 0;
+}
+```
+
+---
+
+### 📌 Recipe 12: Prefix Tree (Trie) & Autocomplete
+
+Demonstrating lexical branching and terminal word tags:
+
+```c
+#include "akp.h"
+
+int main(void) {
+    akp_banner();
+    akp_stamp("Practical Lab #16: Prefix Tree (Trie) Lexicon");
+
+    akp_trie_t* trie = akp_trie_create();
+    akp_trie_insert(trie, "algorithm");
+    akp_trie_insert(trie, "algo");
+    akp_trie_insert(trie, "algebra");
+    akp_trie_insert(trie, "binary");
+    akp_trie_render(trie, "Trie Dictionary");
+
+    akp_trie_destroy(trie);
+    return 0;
+}
+```
+
+---
+
+### 📌 Recipe 13: Huffman Optimal Prefix Coding & Data Compression
+
+Calculating greedy variable-length prefix codes and bandwidth savings:
+
+```c
+#include "akp.h"
+
+int main(void) {
+    akp_banner();
+    akp_stamp("Practical Lab #17: Huffman Data Compression");
+
+    const char* data = "AKSHAR MIYANI SYSTEMS ENGINE";
+    akp_huffman_result_t res;
+    if (akp_huffman_encode(data, &res)) {
+        akp_huffman_render(data, &res, "Compressed String");
+    }
+
+    return 0;
+}
+```
+
+---
+
+### 📌 Recipe 14: LRU (Least Recently Used) Cache Simulation
+
+Demonstrating virtual memory buffer page replacement:
+
+```c
+#include "akp.h"
+
+int main(void) {
+    akp_banner();
+    akp_stamp("Practical Lab #18: LRU Cache Buffer Pool");
+
+    akp_lru_cache_t* cache = akp_lru_create(3);
+    akp_lru_put(cache, 1, 100);
+    akp_lru_put(cache, 2, 200);
+    akp_lru_put(cache, 3, 300);
+    akp_lru_render(cache, "Initial Cache State");
+
+    akp_lru_get(cache, 1); // Access 1 -> promoted to MRU
+    akp_lru_put(cache, 4, 400); // Evicts 2 (since 2 was LRU)
+    akp_lru_render(cache, "After Evicting Key 2");
+
+    akp_lru_destroy(cache);
+    return 0;
+}
+```
+
+---
+
 ## 🔇 4. Silent Audio Engine: Zero Lab Disruption (0dB Default)
 
-By default in AKP v1.5.0, **all audio functions are 100% silent (0dB)**:
+By default in AKP v1.6.0, **all audio functions are 100% silent (0dB)**:
 - Running lab tests, demos, and sorting visualizers produces **zero motherboard beeps or speaker noise**, ensuring you never disturb evaluators, professors, or peers in quiet computer labs.
 - All sound APIs (`akp_sound_coin()`, `akp_sound_victory()`, `akp_sound_alert()`, `akp_melody_tetris()`) remain safe, no-op calls.
 - If hardware audio is explicitly desired, simply add `#define AKP_ENABLE_AUDIO_HARDWARE 1` before `#include "akp.h"`.
