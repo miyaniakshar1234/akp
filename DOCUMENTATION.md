@@ -1,7 +1,7 @@
 # ⚡ AKP ENGINE: THE DEFINITIVE ARCHITECTURAL MANUAL
 ### *Master Documentation of the High-Performance Flashy C/C++ Toolkit*
 **Engineered & Authored by the Genius Architect: Akshar Miyani**  
-*AKP Studio Systems Architecture | Version 1.6.0 (Silent Audio Engine)*
+*AKP Studio Systems Architecture | Version 1.7.0 (Silent Audio Engine)*
 
 ---
 
@@ -25,9 +25,9 @@ Standard C (`<stdio.h>`) has remained visually static since 1972. In modern deve
 ```
 d:/Projects/AKP/
 ├── include/
-│   ├── akp.h                   # Standalone Amalgamated Master Header (v1.6.0)
+│   ├── akp.h                   # Standalone Amalgamated Master Header (v1.7.0)
 │   ├── akp.hpp                 # Modern C++17/20 STL & RAII Master Wrapper
-│   └── akp/                    # Modular Header Suite (32 Subsystems)
+│   └── akp/                    # Modular Header Suite (36 Subsystems)
 │       ├── akp.h               # Root Modular Umbrella Header
 │       ├── color.h             # 24-Bit TrueColor RGB, ANSI, Linear Gradients
 │       ├── banner.h            # ASCII Branding Splash & Lab Evaluation Stamp
@@ -59,7 +59,11 @@ d:/Projects/AKP/
 │       ├── min_heap.h          # Binary Min-Heap & Priority Queue Level Visualizer
 │       ├── trie.h              # Visual Prefix Tree (Trie) & Autocomplete Tree
 │       ├── huffman.h           # Huffman Variable Prefix Coding & Compression
-│       └── lru_cache.h         # Visual LRU Cache Buffer Pool & Eviction Monitor
+│       ├── lru_cache.h         # Visual LRU Cache Buffer Pool & Eviction Monitor
+│       ├── disjoint_set.h      # Disjoint-Set Union-Find (DSU) & Set Partitions
+│       ├── kruskal.h           # Kruskal's Minimum Spanning Tree (MST) Visualizer
+│       ├── ring_buffer.h       # Lockless SPSC Circular Ring Buffer & Fill Gauge
+│       └── bitset.h            # Systems Bitset & 64-Bit Register Telemetry
 ├── examples/
 │   ├── lab_demo.c              # Comprehensive C Lab Demonstration
 │   ├── cpp_demo.cpp            # Modern C++17 STL Benchmark & Visualizer
@@ -67,9 +71,10 @@ d:/Projects/AKP/
 │   ├── lab_showcase_v130.c     # Live Showcase: Sorting, Telemetry, Melodies
 │   ├── lab_showcase_v140.c     # v1.4.0 Showcase: Stack, Queue, Search, Graph
 │   ├── lab_showcase_v150.c     # v1.5.0 Showcase: Hash Table, Lists, Dijkstra, KMP
-│   └── lab_showcase_v160.c     # v1.6.0 Showcase: Min-Heap, Trie, Huffman, LRU Cache
+│   ├── lab_showcase_v160.c     # v1.6.0 Showcase: Min-Heap, Trie, Huffman, LRU Cache
+│   └── lab_showcase_v170.c     # v1.7.0 Showcase: DSU, Kruskal MST, Ring Buffer, Bitset
 ├── tests/
-│   └── test_suite.c            # Automated 61/61 Test Suite (100% Pass Rate)
+│   └── test_suite.c            # Automated 79/79 Test Suite (100% Pass Rate)
 ├── cmake/
 │   └── AKPConfig.cmake.in      # Modern CMake Package Export
 ├── ports/akp/                  # Official vcpkg Port Definition
@@ -472,6 +477,64 @@ Simulates Operating Systems virtual memory page replacement and high-performance
 - `void akp_lru_put(akp_lru_cache_t* cache, int key, int value)`: Inserts key-value pair at `Head`. On capacity overflow, evicts `Tail` (Least Recently Used - LRU).
 - `void akp_lru_render(const akp_lru_cache_t* cache, const char* title)`: Renders bidirectional cache line diagram: `[MRU / HEAD] -> [K:v] <-> [K:v] -> [LRU / TAIL]`.
 - `void akp_lru_destroy(akp_lru_cache_t* cache)`: Safely deallocates cache list.
+
+---
+
+### 3.33. Disjoint-Set Union-Find (DSU) & Set Partitions (`akp/disjoint_set.h`)
+
+#### Internal Mechanism:
+Maintains a collection of disjoint dynamic sets with near-constant time operations.
+- Implements **Path Compression** during `akp_dsu_find()`, flattening trees directly to root representatives.
+- Implements **Union by Rank** during `akp_dsu_union()`, attaching shallower trees under deeper trees to prevent degenerate branches.
+- Achieves amortized time complexity of $O(\alpha(N))$ per operation, where $\alpha$ is the extremely slow-growing Inverse Ackermann function ($\alpha(N) < 5$ for all physical universes).
+- `akp_dsu_t* akp_dsu_create(int n)`: Initializes $N$ singleton sets ($[0..N-1]$).
+- `int akp_dsu_find(akp_dsu_t* dsu, int x)`: Finds canonical root representative with recursive path compression.
+- `bool akp_dsu_union(akp_dsu_t* dsu, int x, int y)`: Merges sets containing $x$ and $y$. Returns `false` if already in same component (cycle detection).
+- `bool akp_dsu_connected(akp_dsu_t* dsu, int x, int y)`: Tests component connectivity.
+- `void akp_dsu_render(const akp_dsu_t* dsu, const char* title)`: Renders tabular parent/rank table and groups all vertices into partitioned equivalence classes: `Set [Root]: { v1, v2, ... }`.
+- `void akp_dsu_destroy(akp_dsu_t* dsu)`: Frees DSU heap resources.
+
+---
+
+### 3.34. Kruskal's Minimum Spanning Tree (MST) (`akp/kruskal.h`)
+
+#### Internal Mechanism:
+Computes the Minimum Spanning Tree of any connected, undirected, weighted graph using greedy edge selection:
+- Extracts all undirected edge descriptors $(u, v, w)$ from an `akp_graph_t` adjacency matrix.
+- Sorts edges in non-decreasing order of weight using standard quicksort ($O(E \log E)$).
+- Iterates through sorted edges, querying an internal Disjoint-Set Union structure. If endpoints belong to disjoint components, the edge is accepted into the MST; if they share a component, the edge is rejected to prevent cycle creation.
+- `akp_kruskal_result_t akp_kruskal_solve(const akp_graph_t* g)`: Produces spanning tree edge list, edge count ($V - 1$), total minimal weight, and span success status.
+- `void akp_kruskal_render(const akp_graph_t* g, const akp_kruskal_result_t* res, const char* title)`: Generates terminal table detailing each spanning edge `u <───(weight)───> v`, vertices covered, and total spanning tree cost.
+
+---
+
+### 3.35. Lockless SPSC Circular Ring Buffer (`akp/ring_buffer.h`)
+
+#### Internal Mechanism:
+Provides high-throughput, non-blocking Single-Producer Single-Consumer circular queue telemetry:
+- Requires power-of-two capacity ($2^k$), enabling lightning-fast bitwise masking `head & (capacity - 1)` rather than expensive integer division / modulo operations.
+- Tracks head (write pointer) and tail (read pointer) monotonically without buffer overrun.
+- `akp_ring_buffer_t* akp_ring_create(size_t capacity)`: Allocates aligned circular buffer. Rounds up to next power of two if needed.
+- `bool akp_ring_push(akp_ring_buffer_t* rb, int val)`: Non-blocking push; returns `false` if full.
+- `bool akp_ring_pop(akp_ring_buffer_t* rb, int* out_val)`: Non-blocking pop; returns `false` if empty.
+- `bool akp_ring_peek(const akp_ring_buffer_t* rb, int* out_val)`: Inspects front element without advancing tail pointer.
+- `void akp_ring_render(const akp_ring_buffer_t* rb, const char* title)`: Visualizes circular slot array with `[HEAD]` and `[TAIL]` markers, item indices, occupancy count, and dynamic linear fill gauge.
+- `void akp_ring_destroy(akp_ring_buffer_t* rb)`: Safely deallocates buffer.
+
+---
+
+### 3.36. Systems Bitset & Hardware Register Telemetry (`akp/bitset.h`)
+
+#### Internal Mechanism:
+Simulates low-level hardware registers, memory bitmasks, and CPU flags:
+- Provides 64-bit hardware register simulation with bit-level granularity.
+- Supports atomic bit operations: `set`, `clear`, `toggle`, `test`, `set_all`, and `clear_all`.
+- Implements hardware-efficient 64-bit Hamming weight (popcount) calculation via SWAR (SIMD Within A Register) bit parallelism.
+- `akp_bitset_t akp_bitset_create(size_t num_bits)`: Initializes bitset up to 64 bits.
+- `void akp_bitset_set(akp_bitset_t* bs, size_t bit)` / `void akp_bitset_clear(akp_bitset_t* bs, size_t bit)`: Manipulates specific bit.
+- `bool akp_bitset_test(const akp_bitset_t* bs, size_t bit)`: Tests bit state.
+- `size_t akp_bitset_count(const akp_bitset_t* bs)`: Computes active high bits.
+- `void akp_bitset_render(const akp_bitset_t* bs, const char* title)`: Formats 64-bit quad-word binary layout partitioned into 4 nibble groups (`[63..48] [47..32] [31..16] [15..0]`), displays hexadecimal representation, list of set indices, and visual bit density ratio.
 
 ---
 
