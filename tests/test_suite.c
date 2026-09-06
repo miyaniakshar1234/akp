@@ -210,6 +210,57 @@ int main(void) {
     AKP_ASSERT_EQ(suite, "LRU: Cache Get Key 3 (300)", akp_lru_get(lru, 3), 300);
     akp_lru_destroy(lru);
 
+    /* Test 23: Disjoint-Set Union (DSU) */
+    akp_dsu_t* dsu = akp_dsu_create(6);
+    AKP_ASSERT_TRUE(suite, "DSU: Created Successfully", dsu != NULL);
+    akp_dsu_union(dsu, 0, 1);
+    akp_dsu_union(dsu, 1, 2);
+    AKP_ASSERT_TRUE(suite, "DSU: Connected (0, 2) in Same Set", akp_dsu_connected(dsu, 0, 2));
+    AKP_ASSERT_TRUE(suite, "DSU: Disconnected (0, 3) in Different Sets", !akp_dsu_connected(dsu, 0, 3));
+    AKP_ASSERT_EQ(suite, "DSU: Total Sets Remaining (4)", dsu->num_sets, 4);
+    akp_dsu_destroy(dsu);
+
+    /* Test 24: Kruskal's Minimum Spanning Tree */
+    akp_graph_t* kg = akp_graph_create(4, 0);
+    akp_graph_add_edge(kg, 0, 1, 1);
+    akp_graph_add_edge(kg, 1, 2, 2);
+    akp_graph_add_edge(kg, 2, 3, 3);
+    akp_graph_add_edge(kg, 0, 3, 10); // cycle causing heavy edge
+    akp_kruskal_result_t kres;
+    bool k_ok = akp_kruskal_solve(kg, &kres);
+    AKP_ASSERT_TRUE(suite, "Kruskal: MST Solved Successfully", k_ok);
+    AKP_ASSERT_EQ(suite, "Kruskal: MST Edge Count (3)", kres.mst_edge_count, 3);
+    AKP_ASSERT_EQ(suite, "Kruskal: Total Minimal Weight (6)", kres.total_mst_weight, 6);
+    AKP_ASSERT_EQ(suite, "Kruskal: Cycles Rejected Count (1)", kres.cycles_rejected, 1);
+    akp_graph_free(kg);
+
+    /* Test 25: Lockless Ring Buffer */
+    akp_ring_buf_t* rb = akp_ring_create(8);
+    AKP_ASSERT_TRUE(suite, "RingBuffer: Created Successfully", rb != NULL);
+    akp_ring_write(rb, 0xAA);
+    akp_ring_write(rb, 0xBB);
+    akp_ring_write(rb, 0xCC);
+    AKP_ASSERT_EQ(suite, "RingBuffer: Available Count (3)", akp_ring_available(rb), 3);
+    uint8_t read_b = 0;
+    akp_ring_read(rb, &read_b);
+    AKP_ASSERT_EQ(suite, "RingBuffer: Read First Byte (0xAA)", read_b, 0xAA);
+    AKP_ASSERT_EQ(suite, "RingBuffer: Remaining Available (2)", akp_ring_available(rb), 2);
+    akp_ring_destroy(rb);
+
+    /* Test 26: Systems Bitset */
+    akp_bitset_t* bs = akp_bitset_create(64);
+    AKP_ASSERT_TRUE(suite, "Bitset: Created Successfully", bs != NULL);
+    akp_bitset_set(bs, 0);
+    akp_bitset_set(bs, 7);
+    akp_bitset_set(bs, 63);
+    AKP_ASSERT_TRUE(suite, "Bitset: Test Bit 0 (Set)", akp_bitset_test(bs, 0));
+    AKP_ASSERT_TRUE(suite, "Bitset: Test Bit 1 (Clear)", !akp_bitset_test(bs, 1));
+    AKP_ASSERT_TRUE(suite, "Bitset: Test Bit 63 (Set)", akp_bitset_test(bs, 63));
+    AKP_ASSERT_EQ(suite, "Bitset: Hamming Weight / Popcount (3)", akp_bitset_count(bs), 3);
+    akp_bitset_flip(bs, 0);
+    AKP_ASSERT_EQ(suite, "Bitset: Popcount After Flip (2)", akp_bitset_count(bs), 2);
+    akp_bitset_destroy(bs);
+
     /* End Suite & Summary */
     return akp_test_suite_end(&suite);
 }

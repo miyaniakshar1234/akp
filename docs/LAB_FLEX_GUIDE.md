@@ -449,9 +449,118 @@ int main(void) {
 
 ---
 
+### 📌 Recipe 15: Disjoint-Set Union-Find (DSU) Dynamic Partitioning
+
+Demonstrating connected components, path compression, and set equivalence classes:
+
+```c
+#include "akp.h"
+
+int main(void) {
+    akp_banner();
+    akp_stamp("Practical Lab #19: Disjoint-Set Union-Find (DSU)");
+
+    akp_dsu_t* dsu = akp_dsu_create(6);
+    akp_dsu_union(dsu, 0, 1);
+    akp_dsu_union(dsu, 1, 2);
+    akp_dsu_union(dsu, 3, 4);
+
+    akp_dsu_render(dsu, "Dynamic Set Equivalence Partitions");
+
+    akp_dsu_destroy(dsu);
+    return 0;
+}
+```
+
+---
+
+### 📌 Recipe 16: Kruskal's Minimum Spanning Tree (MST) with Cycle Detection
+
+Finding optimal spanning tree topology over weighted graphs:
+
+```c
+#include "akp.h"
+
+int main(void) {
+    akp_banner();
+    akp_stamp("Practical Lab #20: Kruskal's Minimum Spanning Tree");
+
+    akp_graph_t* g = akp_graph_create(5, false);
+    akp_graph_add_edge_weighted(g, 0, 1, 2);
+    akp_graph_add_edge_weighted(g, 0, 3, 6);
+    akp_graph_add_edge_weighted(g, 1, 2, 3);
+    akp_graph_add_edge_weighted(g, 1, 3, 8);
+    akp_graph_add_edge_weighted(g, 1, 4, 5);
+    akp_graph_add_edge_weighted(g, 2, 4, 7);
+
+    akp_kruskal_result_t mst = akp_kruskal_solve(g);
+    akp_kruskal_render(g, &mst, "Optimal Minimum Spanning Tree");
+
+    akp_graph_destroy(g);
+    return 0;
+}
+```
+
+---
+
+### 📌 Recipe 17: Lockless Ring Buffer Real-Time Streaming & Fill Gauge
+
+High-performance circular buffering for audio, networking, and OS streams:
+
+```c
+#include "akp.h"
+
+int main(void) {
+    akp_banner();
+    akp_stamp("Practical Lab #21: Lockless SPSC Circular Ring Buffer");
+
+    akp_ring_buffer_t* rb = akp_ring_create(8);
+    for (int i = 1; i <= 5; ++i) {
+        akp_ring_push(rb, i * 10);
+    }
+
+    akp_ring_render(rb, "Circular Buffer State (5/8 slots occupied)");
+
+    int val;
+    akp_ring_pop(rb, &val); // Dequeue 10
+    akp_ring_render(rb, "After Dequeuing Head Element");
+
+    akp_ring_destroy(rb);
+    return 0;
+}
+```
+
+---
+
+### 📌 Recipe 18: Systems Bitset & Hardware Register Telemetry
+
+Simulating low-level CPU flags, memory masks, and bitwise Hamming weight:
+
+```c
+#include "akp.h"
+
+int main(void) {
+    akp_banner();
+    akp_stamp("Practical Lab #22: Systems Bitset & Hardware Register");
+
+    akp_bitset_t bs = akp_bitset_create(32);
+    akp_bitset_set(&bs, 0);  // Enable bit 0
+    akp_bitset_set(&bs, 3);  // Enable bit 3
+    akp_bitset_set(&bs, 7);  // Enable bit 7
+    akp_bitset_set(&bs, 15); // Enable bit 15
+    akp_bitset_set(&bs, 31); // Enable bit 31
+
+    akp_bitset_render(&bs, "32-Bit System Control Register (CR0)");
+
+    return 0;
+}
+```
+
+---
+
 ## 🔇 4. Silent Audio Engine: Zero Lab Disruption (0dB Default)
 
-By default in AKP v1.6.0, **all audio functions are 100% silent (0dB)**:
+By default in AKP v1.7.0, **all audio functions are 100% silent (0dB)**:
 - Running lab tests, demos, and sorting visualizers produces **zero motherboard beeps or speaker noise**, ensuring you never disturb evaluators, professors, or peers in quiet computer labs.
 - All sound APIs (`akp_sound_coin()`, `akp_sound_victory()`, `akp_sound_alert()`, `akp_melody_tetris()`) remain safe, no-op calls.
 - If hardware audio is explicitly desired, simply add `#define AKP_ENABLE_AUDIO_HARDWARE 1` before `#include "akp.h"`.

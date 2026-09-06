@@ -7,7 +7,7 @@
  *  ██║  ██║██║ ╚██╗██║          ███████╗██║ ╚████║╚██████╔╝██║██║ ╚████║███████╗
  *  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝          ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝╚══════╝
  * ============================================================================
- *  🚀 AKP CORE ENGINE v1.6.0 (Silent Audio Default)
+ *  🚀 AKP CORE ENGINE v1.7.0 (Silent Audio Default)
  *  Author: Akshar Miyani
  *  Identity: AKP Studio / Advanced C & C++ Flashy Development Toolkit
  *  Zero-Dependency | Pure C99/C11 & C++11/14/17/20 Compatible | Cross-Platform
@@ -2556,6 +2556,449 @@ static inline void akp_lru_render(const akp_lru_cache_t* cache, const char* titl
         curr = curr->next;
     }
     printf(AKP_BOLD AKP_NEON_RED " -> [LRU / TAIL]\n\n" AKP_RESET);
+}
+
+/* ============================================================================
+ * 33. VISUAL DISJOINT-SET UNION (DSU / UNION-FIND)
+ * ============================================================================ */
+typedef struct {
+    int* parent;
+    int* rank;
+    int n;
+    int num_sets;
+} akp_dsu_t;
+
+static inline akp_dsu_t* akp_dsu_create(int n) {
+    if (n <= 0) n = 16;
+    akp_dsu_t* dsu = (akp_dsu_t*)malloc(sizeof(akp_dsu_t));
+    if (!dsu) return NULL;
+    dsu->n = n;
+    dsu->num_sets = n;
+    dsu->parent = (int*)malloc((size_t)n * sizeof(int));
+    dsu->rank = (int*)malloc((size_t)n * sizeof(int));
+    for (int i = 0; i < n; i++) {
+        dsu->parent[i] = i;
+        dsu->rank[i] = 0;
+    }
+    return dsu;
+}
+
+static inline void akp_dsu_destroy(akp_dsu_t* dsu) {
+    if (!dsu) return;
+    if (dsu->parent) free(dsu->parent);
+    if (dsu->rank) free(dsu->rank);
+    free(dsu);
+}
+
+static inline int akp_dsu_find(akp_dsu_t* dsu, int i) {
+    if (!dsu || i < 0 || i >= dsu->n) return -1;
+    if (dsu->parent[i] == i) return i;
+    return dsu->parent[i] = akp_dsu_find(dsu, dsu->parent[i]);
+}
+
+static inline bool akp_dsu_union(akp_dsu_t* dsu, int i, int j) {
+    if (!dsu) return false;
+    int root_i = akp_dsu_find(dsu, i);
+    int root_j = akp_dsu_find(dsu, j);
+    if (root_i == root_j) return false;
+
+    if (dsu->rank[root_i] < dsu->rank[root_j]) {
+        dsu->parent[root_i] = root_j;
+    } else if (dsu->rank[root_i] > dsu->rank[root_j]) {
+        dsu->parent[root_j] = root_i;
+    } else {
+        dsu->parent[root_j] = root_i;
+        dsu->rank[root_i]++;
+    }
+    dsu->num_sets--;
+    return true;
+}
+
+static inline bool akp_dsu_connected(akp_dsu_t* dsu, int i, int j) {
+    if (!dsu) return false;
+    return akp_dsu_find(dsu, i) == akp_dsu_find(dsu, j);
+}
+
+static inline void akp_dsu_render(akp_dsu_t* dsu, const char* title) {
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "╔═══════════════════════════════════════════════════════════════════════════════╗\n");
+    printf("║  🌐 DISJOINT-SET UNION (DSU / UNION-FIND) PARTITION VISUALIZER                ║\n");
+    printf("╚═══════════════════════════════════════════════════════════════════════════════╝\n" AKP_RESET);
+
+    if (title) printf(AKP_BOLD AKP_NEON_YELLOW "  ⚡ State: %s\n" AKP_RESET, title);
+    if (!dsu) {
+        printf(AKP_BOLD AKP_NEON_RED "  [ DSU is NULL ]\n\n" AKP_RESET);
+        return;
+    }
+
+    printf(AKP_BOLD AKP_NEON_GREEN "  Total Elements: %d  |  Disjoint Components: %d\n\n" AKP_RESET, dsu->n, dsu->num_sets);
+
+    printf("  Direct Parent & Rank Pointers:\n  ");
+    for (int i = 0; i < dsu->n; i++) {
+        int root = akp_dsu_find(dsu, i);
+        if (root == i) {
+            printf(AKP_BOLD AKP_NEON_YELLOW "[%d: ROOT(R:%d)] " AKP_RESET, i, dsu->rank[i]);
+        } else {
+            printf(AKP_BOLD AKP_DEEP_BLUE "[%d -> %d] " AKP_RESET, i, dsu->parent[i]);
+        }
+    }
+    printf("\n\n  Connected Component Sets:\n");
+    bool* visited = (bool*)calloc((size_t)dsu->n, sizeof(bool));
+    if (visited) {
+        int group_num = 1;
+        for (int i = 0; i < dsu->n; i++) {
+            int root_i = akp_dsu_find(dsu, i);
+            if (!visited[root_i]) {
+                visited[root_i] = true;
+                printf(AKP_BOLD AKP_NEON_PINK "    Component %2d (Root %d): { " AKP_RESET, group_num++, root_i);
+                for (int j = 0; j < dsu->n; j++) {
+                    if (akp_dsu_find(dsu, j) == root_i) {
+                        printf(AKP_BOLD "%d " AKP_RESET, j);
+                    }
+                }
+                printf(AKP_BOLD AKP_NEON_PINK "}\n" AKP_RESET);
+            }
+        }
+        free(visited);
+    }
+    printf("\n");
+}
+
+/* ============================================================================
+ * 34. VISUAL KRUSKAL'S MINIMUM SPANNING TREE (MST)
+ * ============================================================================ */
+typedef struct {
+    int u;
+    int v;
+    int weight;
+    bool accepted;
+} akp_kruskal_edge_t;
+
+typedef struct {
+    akp_kruskal_edge_t mst_edges[128];
+    int mst_edge_count;
+    int total_mst_weight;
+    int total_inspected;
+    int cycles_rejected;
+} akp_kruskal_result_t;
+
+static inline int akp_kruskal_edge_cmp(const void* a, const void* b) {
+    const akp_kruskal_edge_t* ea = (const akp_kruskal_edge_t*)a;
+    const akp_kruskal_edge_t* eb = (const akp_kruskal_edge_t*)b;
+    return ea->weight - eb->weight;
+}
+
+static inline bool akp_kruskal_solve(const akp_graph_t* g, akp_kruskal_result_t* out_res) {
+    if (!g || !out_res) return false;
+    memset(out_res, 0, sizeof(akp_kruskal_result_t));
+
+    akp_kruskal_edge_t all_edges[256];
+    int edge_count = 0;
+
+    for (int i = 0; i < g->vertices; i++) {
+        for (int j = i + 1; j < g->vertices; j++) {
+            if (g->adj[i][j] > 0) {
+                if (edge_count < 256) {
+                    all_edges[edge_count].u = i;
+                    all_edges[edge_count].v = j;
+                    all_edges[edge_count].weight = g->adj[i][j];
+                    all_edges[edge_count].accepted = false;
+                    edge_count++;
+                }
+            }
+        }
+    }
+
+    if (edge_count == 0) return false;
+    qsort(all_edges, (size_t)edge_count, sizeof(akp_kruskal_edge_t), akp_kruskal_edge_cmp);
+
+    akp_dsu_t* dsu = akp_dsu_create(g->vertices);
+    if (!dsu) return false;
+
+    for (int i = 0; i < edge_count; i++) {
+        out_res->total_inspected++;
+        int u = all_edges[i].u;
+        int v = all_edges[i].v;
+        int w = all_edges[i].weight;
+
+        if (akp_dsu_find(dsu, u) != akp_dsu_find(dsu, v)) {
+            akp_dsu_union(dsu, u, v);
+            all_edges[i].accepted = true;
+            if (out_res->mst_edge_count < 128) {
+                out_res->mst_edges[out_res->mst_edge_count++] = all_edges[i];
+                out_res->total_mst_weight += w;
+            }
+        } else {
+            out_res->cycles_rejected++;
+        }
+    }
+
+    akp_dsu_destroy(dsu);
+    return true;
+}
+
+static inline void akp_kruskal_render(const akp_graph_t* g, const akp_kruskal_result_t* res, const char* title) {
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "╔═══════════════════════════════════════════════════════════════════════════════╗\n");
+    printf("║  🌲 KRUSKAL'S MINIMUM SPANNING TREE (MST) VISUALIZER                          ║\n");
+    printf("╚═══════════════════════════════════════════════════════════════════════════════╝\n" AKP_RESET);
+
+    if (title) printf(AKP_BOLD AKP_NEON_YELLOW "  ⚡ Topology: %s\n" AKP_RESET, title);
+    if (!res || res->mst_edge_count == 0) {
+        printf(AKP_BOLD AKP_NEON_RED "  [ No MST available for this graph ]\n\n" AKP_RESET);
+        return;
+    }
+
+    printf(AKP_BOLD AKP_NEON_GREEN "  Graph Vertices: %d  |  MST Edges: %d  |  Total Minimal Weight: %d\n" AKP_RESET, 
+           g ? g->vertices : 0, res->mst_edge_count, res->total_mst_weight);
+    printf("  Edges Evaluated: %d  |  Cycles Avoided: %d\n\n", res->total_inspected, res->cycles_rejected);
+
+    printf(AKP_BOLD AKP_NEON_PINK "  ┌───────────┬──────────────┬──────────────┬──────────────────┐\n");
+    printf("  │  Edge #   │ Source Vertex│ Target Vertex│ Edge Cost Weight │\n");
+    printf("  ├───────────┼──────────────┼──────────────┼──────────────────┤\n" AKP_RESET);
+
+    for (int i = 0; i < res->mst_edge_count; i++) {
+        printf("  │  MST-%02d   │    Node %2d   │    Node %2d   │      ", 
+               i + 1, res->mst_edges[i].u, res->mst_edges[i].v);
+        printf(AKP_BOLD AKP_NEON_CYAN "%6d      " AKP_RESET, res->mst_edges[i].weight);
+        printf("│\n");
+    }
+    printf(AKP_BOLD AKP_NEON_PINK "  └───────────┴─────────────┴──────────────┴──────────────────┘\n\n" AKP_RESET);
+}
+
+/* ============================================================================
+ * 35. VISUAL LOCKLESS SPSC CIRCULAR RING BUFFER
+ * ============================================================================ */
+typedef struct {
+    uint8_t* buffer;
+    size_t capacity;
+    size_t mask;
+    size_t head;
+    size_t tail;
+    size_t total_written;
+    size_t total_read;
+} akp_ring_buf_t;
+
+static inline size_t akp_next_pow2(size_t v) {
+    v--;
+    v |= v >> 1; v |= v >> 2; v |= v >> 4; v |= v >> 8; v |= v >> 16;
+#if UINTPTR_MAX > 0xFFFFFFFF
+    v |= v >> 32;
+#endif
+    v++;
+    return v == 0 ? 1 : v;
+}
+
+static inline akp_ring_buf_t* akp_ring_create(size_t capacity) {
+    if (capacity < 4) capacity = 4;
+    size_t cap = akp_next_pow2(capacity);
+
+    akp_ring_buf_t* rb = (akp_ring_buf_t*)malloc(sizeof(akp_ring_buf_t));
+    if (!rb) return NULL;
+
+    rb->capacity = cap;
+    rb->mask = cap - 1;
+    rb->buffer = (uint8_t*)malloc(cap);
+    if (!rb->buffer) {
+        free(rb);
+        return NULL;
+    }
+    rb->head = 0;
+    rb->tail = 0;
+    rb->total_written = 0;
+    rb->total_read = 0;
+    return rb;
+}
+
+static inline void akp_ring_destroy(akp_ring_buf_t* rb) {
+    if (!rb) return;
+    if (rb->buffer) free(rb->buffer);
+    free(rb);
+}
+
+static inline size_t akp_ring_available(const akp_ring_buf_t* rb) {
+    if (!rb) return 0;
+    return rb->head - rb->tail;
+}
+
+static inline size_t akp_ring_free_space(const akp_ring_buf_t* rb) {
+    if (!rb) return 0;
+    return rb->capacity - (rb->head - rb->tail);
+}
+
+static inline bool akp_ring_write(akp_ring_buf_t* rb, uint8_t byte) {
+    if (!rb || akp_ring_free_space(rb) == 0) return false;
+    rb->buffer[rb->head & rb->mask] = byte;
+    rb->head++;
+    rb->total_written++;
+    return true;
+}
+
+static inline bool akp_ring_read(akp_ring_buf_t* rb, uint8_t* out_byte) {
+    if (!rb || akp_ring_available(rb) == 0) return false;
+    if (out_byte) *out_byte = rb->buffer[rb->tail & rb->mask];
+    rb->tail++;
+    rb->total_read++;
+    return true;
+}
+
+static inline void akp_ring_render(const akp_ring_buf_t* rb, const char* title) {
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "╔═══════════════════════════════════════════════════════════════════════════════╗\n");
+    printf("║  🔄 LOCKLESS SPSC CIRCULAR RING BUFFER TELEMETRY                              ║\n");
+    printf("╚═══════════════════════════════════════════════════════════════════════════════╝\n" AKP_RESET);
+
+    if (title) printf(AKP_BOLD AKP_NEON_YELLOW "  ⚡ Channel: %s\n" AKP_RESET, title);
+    if (!rb) {
+        printf(AKP_BOLD AKP_NEON_RED "  [ Ring Buffer is NULL ]\n\n" AKP_RESET);
+        return;
+    }
+
+    size_t occupied = akp_ring_available(rb);
+    double fill_pct = (double)occupied / (double)rb->capacity * 100.0;
+
+    printf(AKP_BOLD AKP_NEON_GREEN "  Capacity: %zu bytes  |  Occupancy: %zu / %zu (%.1f%%)\n" AKP_RESET,
+           rb->capacity, occupied, rb->capacity, fill_pct);
+    printf("  Total Written: %zu bytes  |  Total Read: %zu bytes\n\n",
+           rb->total_written, rb->total_read);
+
+    printf("  Fill Gauge: [");
+    int bar_width = 30;
+    int filled = (int)((fill_pct / 100.0) * bar_width);
+    for (int i = 0; i < bar_width; i++) {
+        if (i < filled) printf(AKP_BOLD AKP_NEON_GREEN "█" AKP_RESET);
+        else printf(AKP_DIM "░" AKP_RESET);
+    }
+    printf("] %.1f%%\n\n", fill_pct);
+
+    printf("  Slot State (W: Write Head, R: Read Tail):\n  ");
+    for (size_t i = 0; i < rb->capacity; i++) {
+        size_t h_idx = rb->head & rb->mask;
+        size_t t_idx = rb->tail & rb->mask;
+        bool is_head = (i == h_idx);
+        bool is_tail = (i == t_idx);
+
+        if (is_head && is_tail) {
+            printf(AKP_BOLD AKP_NEON_YELLOW "[%02zu: W/R] " AKP_RESET, i);
+        } else if (is_head) {
+            printf(AKP_BOLD AKP_NEON_GREEN "[%02zu: W->] " AKP_RESET, i);
+        } else if (is_tail) {
+            printf(AKP_BOLD AKP_NEON_PINK "[%02zu: <-R] " AKP_RESET, i);
+        } else {
+            printf(AKP_DIM "[%02zu: 0x%02X] " AKP_RESET, i, rb->buffer[i]);
+        }
+    }
+    printf("\n\n");
+}
+
+/* ============================================================================
+ * 36. VISUAL BITSET & HARDWARE REGISTER TELEMETRY ENGINE
+ * ============================================================================ */
+typedef struct {
+    uint64_t* words;
+    size_t num_bits;
+    size_t num_words;
+} akp_bitset_t;
+
+static inline akp_bitset_t* akp_bitset_create(size_t num_bits) {
+    if (num_bits == 0) num_bits = 64;
+    akp_bitset_t* bs = (akp_bitset_t*)malloc(sizeof(akp_bitset_t));
+    if (!bs) return NULL;
+
+    bs->num_bits = num_bits;
+    bs->num_words = (num_bits + 63) / 64;
+    bs->words = (uint64_t*)calloc(bs->num_words, sizeof(uint64_t));
+    if (!bs->words) {
+        free(bs);
+        return NULL;
+    }
+    return bs;
+}
+
+static inline void akp_bitset_destroy(akp_bitset_t* bs) {
+    if (!bs) return;
+    if (bs->words) free(bs->words);
+    free(bs);
+}
+
+static inline void akp_bitset_set(akp_bitset_t* bs, size_t bit_idx) {
+    if (!bs || bit_idx >= bs->num_bits) return;
+    bs->words[bit_idx / 64] |= ((uint64_t)1 << (bit_idx % 64));
+}
+
+static inline void akp_bitset_clear(akp_bitset_t* bs, size_t bit_idx) {
+    if (!bs || bit_idx >= bs->num_bits) return;
+    bs->words[bit_idx / 64] &= ~((uint64_t)1 << (bit_idx % 64));
+}
+
+static inline void akp_bitset_flip(akp_bitset_t* bs, size_t bit_idx) {
+    if (!bs || bit_idx >= bs->num_bits) return;
+    bs->words[bit_idx / 64] ^= ((uint64_t)1 << (bit_idx % 64));
+}
+
+static inline bool akp_bitset_test(const akp_bitset_t* bs, size_t bit_idx) {
+    if (!bs || bit_idx >= bs->num_bits) return false;
+    return (bs->words[bit_idx / 64] & ((uint64_t)1 << (bit_idx % 64))) != 0;
+}
+
+static inline void akp_bitset_set_all(akp_bitset_t* bs) {
+    if (!bs) return;
+    memset(bs->words, 0xFF, bs->num_words * sizeof(uint64_t));
+    size_t rem = bs->num_bits % 64;
+    if (rem != 0) {
+        bs->words[bs->num_words - 1] &= (((uint64_t)1 << rem) - 1);
+    }
+}
+
+static inline void akp_bitset_clear_all(akp_bitset_t* bs) {
+    if (!bs) return;
+    memset(bs->words, 0, bs->num_words * sizeof(uint64_t));
+}
+
+static inline size_t akp_bitset_count(const akp_bitset_t* bs) {
+    if (!bs) return 0;
+    size_t count = 0;
+    for (size_t i = 0; i < bs->num_words; i++) {
+        uint64_t w = bs->words[i];
+        while (w) {
+            w &= (w - 1);
+            count++;
+        }
+    }
+    return count;
+}
+
+static inline void akp_bitset_render(const akp_bitset_t* bs, const char* title) {
+    akp_init_console();
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "╔═══════════════════════════════════════════════════════════════════════════════╗\n");
+    printf("║  🔢 BINARY BITSET & HARDWARE REGISTER TELEMETRY ENGINE                       ║\n");
+    printf("╚═══════════════════════════════════════════════════════════════════════════════╝\n" AKP_RESET);
+
+    if (title) printf(AKP_BOLD AKP_NEON_YELLOW "  ⚡ Register / Bitmask: %s\n" AKP_RESET, title);
+    if (!bs) {
+        printf(AKP_BOLD AKP_NEON_RED "  [ Bitset is NULL ]\n\n" AKP_RESET);
+        return;
+    }
+
+    size_t set_bits = akp_bitset_count(bs);
+    size_t clear_bits = bs->num_bits - set_bits;
+    double density = (double)set_bits / (double)bs->num_bits * 100.0;
+
+    printf(AKP_BOLD AKP_NEON_GREEN "  Total Bits: %zu  |  Set (Hamming Weight): %zu  |  Clear: %zu  |  Density: %.1f%%\n\n" AKP_RESET,
+           bs->num_bits, set_bits, clear_bits, density);
+
+    printf("  Bit Vector Map:\n  ");
+    for (size_t i = 0; i < bs->num_bits; i++) {
+        if (i > 0 && i % 8 == 0) printf(AKP_DIM "| " AKP_RESET);
+        if (i > 0 && i % 32 == 0) printf("\n  ");
+
+        if (akp_bitset_test(bs, i)) {
+            printf(AKP_BOLD AKP_NEON_GREEN "1 " AKP_RESET);
+        } else {
+            printf(AKP_DIM "· " AKP_RESET);
+        }
+    }
+    printf("\n\n");
 }
 
 #ifdef __cplusplus

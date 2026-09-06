@@ -39,5 +39,9 @@
 #include "trie.h"
 #include "huffman.h"
 #include "lru_cache.h"
+#include "disjoint_set.h"
+#include "kruskal.h"
+#include "ring_buffer.h"
+#include "bitset.h"
 
 #endif /* AKP_MODULAR_ROOT_H */

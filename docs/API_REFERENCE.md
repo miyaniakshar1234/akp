@@ -1,7 +1,7 @@
 # 📚 AKP ENGINE: COMPLETE API & SUBSYSTEM REFERENCE
 ### *Technical Specification, Function Signatures & Execution Contracts*
 **Architect: Akshar Miyani | AKP Studio**  
-*Release: v1.6.0 | Language Targets: C99, C11, C++17, C++20*
+*Release: v1.7.0 | Language Targets: C99, C11, C++17, C++20*
 
 ---
 
@@ -38,6 +38,10 @@
 30. [Visual Prefix Tree (Trie) & Autocomplete Engine](#30-visual-prefix-tree-trie--autocomplete-engine)
 31. [Visual Huffman Coding & Data Compression](#31-visual-huffman-coding--data-compression)
 32. [Visual LRU Cache & Buffer Pool Simulator](#32-visual-lru-cache--buffer-pool-simulator)
+33. [Disjoint-Set Union-Find (DSU)](#33-disjoint-set-union-find-dsu)
+34. [Kruskal's Minimum Spanning Tree (MST)](#34-kruskals-minimum-spanning-tree-mst)
+35. [Lockless Circular Ring Buffer](#35-lockless-circular-ring-buffer)
+36. [Systems Bitset & Hardware Registers](#36-systems-bitset--hardware-registers)
 
 ---
 
@@ -614,6 +618,125 @@ Header: `<akp/lru_cache.h>` or `<akp.h>`
 
 ### `void akp_lru_render(const akp_lru_cache_t* cache, const char* title)`
 - Renders cache line order: `[MRU / HEAD] -> [K:v] <-> [K:v] -> [LRU / TAIL]` with occupancy and hit ratio telemetry.
+
+---
+
+## 33. Disjoint-Set Union-Find (DSU)
+
+Header: `<akp/disjoint_set.h>` or `<akp.h>`
+
+### `akp_dsu_t* akp_dsu_create(int n)`
+- Allocates and initializes an $N$-element disjoint-set structure ($[0..n-1]$) where each element starts as its own representative with rank 0.
+- **Complexity**: $O(N)$ allocation and initialization.
+
+### `int akp_dsu_find(akp_dsu_t* dsu, int x)`
+- Recursively determines the canonical representative root of the set containing element `x`.
+- Employs **Path Compression** to point visited nodes directly to the root, optimizing future lookups.
+- **Complexity**: Amortized $O(\alpha(N))$ where $\alpha$ is the Inverse Ackermann function.
+
+### `bool akp_dsu_union(akp_dsu_t* dsu, int x, int y)`
+- Merges the sets containing elements `x` and `y` using **Union by Rank**.
+- Attaches the tree of lower rank to the tree of higher rank.
+- Decrements the active disjoint component count upon successful union.
+- **Returns**: `true` if a new union was formed; `false` if `x` and `y` were already in the same set (cycle detected).
+- **Complexity**: Amortized $O(\alpha(N))$.
+
+### `bool akp_dsu_connected(akp_dsu_t* dsu, int x, int y)`
+- Tests whether elements `x` and `y` belong to the same connected equivalence class.
+- **Returns**: `true` if `find(x) == find(y)`, else `false`.
+- **Complexity**: Amortized $O(\alpha(N))$.
+
+### `void akp_dsu_render(const akp_dsu_t* dsu, const char* title)`
+- Generates a terminal visualizer displaying parent pointers, ranks, total component count, and formatted set partitions (`Set [Root]: { e1, e2, ... }`).
+
+### `void akp_dsu_destroy(akp_dsu_t* dsu)`
+- Frees internal parent/rank buffers and the DSU container.
+
+---
+
+## 34. Kruskal's Minimum Spanning Tree (MST)
+
+Header: `<akp/kruskal.h>` or `<akp.h>`
+
+### `akp_kruskal_result_t akp_kruskal_solve(const akp_graph_t* g)`
+- Solves the Minimum Spanning Tree for any connected, undirected, weighted graph `akp_graph_t`.
+- Gathers all undirected edges, sorts them in non-decreasing weight order ($O(E \log E)$), and uses an internal DSU to select exactly $V - 1$ acyclic edges.
+- **Returns**: `akp_kruskal_result_t` structure containing edge count, edge list, total MST weight, and boolean success flag.
+- **Complexity**: $O(E \log E + E \cdot \alpha(V))$.
+
+### `void akp_kruskal_render(const akp_graph_t* g, const akp_kruskal_result_t* res, const char* title)`
+- Renders an ASCII/Unicode table of all chosen spanning tree branches (`u <──(weight)──> v`), status badges, and aggregate cost calculation.
+
+---
+
+## 35. Lockless Circular Ring Buffer
+
+Header: `<akp/ring_buffer.h>` or `<akp.h>`
+
+### `akp_ring_buffer_t* akp_ring_create(size_t capacity)`
+- Allocates an aligned single-producer single-consumer circular ring buffer. Capacity is automatically rounded up to the nearest power of two ($2^k$) to enable efficient bitwise index masking (`index & (capacity - 1)`).
+- **Returns**: Pointer to allocated buffer or `NULL` on failure.
+
+### `bool akp_ring_push(akp_ring_buffer_t* rb, int val)`
+- Pushes an integer into the tail of the ring buffer without locks.
+- **Returns**: `true` on success; `false` if buffer is at maximum capacity.
+- **Complexity**: $O(1)$.
+
+### `bool akp_ring_pop(akp_ring_buffer_t* rb, int* out_val)`
+- Extracts the oldest integer from the head of the ring buffer.
+- **Returns**: `true` on success; `false` if buffer is empty.
+- **Complexity**: $O(1)$.
+
+### `bool akp_ring_peek(const akp_ring_buffer_t* rb, int* out_val)`
+- Retrieves the oldest value without advancing the read pointer.
+- **Returns**: `true` if element exists; `false` if empty.
+- **Complexity**: $O(1)$.
+
+### `size_t akp_ring_size(const akp_ring_buffer_t* rb)` / `bool akp_ring_is_empty(...)` / `bool akp_ring_is_full(...)`
+- Query helper functions returning live element count, empty condition, and full saturation condition.
+- **Complexity**: $O(1)$.
+
+### `void akp_ring_render(const akp_ring_buffer_t* rb, const char* title)`
+- Renders circular memory slot map with `[HEAD]` and `[TAIL]` indicators, element values, and visual horizontal percentage fill gauge.
+
+### `void akp_ring_destroy(akp_ring_buffer_t* rb)`
+- Frees internal circular buffer and struct memory.
+
+---
+
+## 36. Systems Bitset & Hardware Registers
+
+Header: `<akp/bitset.h>` or `<akp.h>`
+
+### `akp_bitset_t akp_bitset_create(size_t num_bits)`
+- Initializes a 64-bit hardware register simulation bitset (clamped to $[1..64]$ bits). All bits set to 0.
+
+### `void akp_bitset_set(akp_bitset_t* bs, size_t bit)`
+- Sets specified bit position to 1 via bitwise OR mask (`value |= (1ULL << bit)`).
+- **Complexity**: $O(1)$.
+
+### `void akp_bitset_clear(akp_bitset_t* bs, size_t bit)`
+- Clears specified bit position to 0 via bitwise AND NOT mask (`value &= ~(1ULL << bit)`).
+- **Complexity**: $O(1)$.
+
+### `void akp_bitset_toggle(akp_bitset_t* bs, size_t bit)`
+- Inverts specified bit position via bitwise XOR mask (`value ^= (1ULL << bit)`).
+- **Complexity**: $O(1)$.
+
+### `bool akp_bitset_test(const akp_bitset_t* bs, size_t bit)`
+- Tests whether specified bit is set (`1`). Returns `true` or `false`.
+- **Complexity**: $O(1)$.
+
+### `void akp_bitset_set_all(akp_bitset_t* bs)` / `void akp_bitset_clear_all(akp_bitset_t* bs)`
+- Sets all bits to 1 or clears all bits to 0 across the configured bit width.
+- **Complexity**: $O(1)$.
+
+### `size_t akp_bitset_count(const akp_bitset_t* bs)`
+- Computes the population count (Hamming weight) of active bits using SWAR parallel bit twiddling.
+- **Complexity**: $O(1)$ constant time.
+
+### `void akp_bitset_render(const akp_bitset_t* bs, const char* title)`
+- Renders binary register visualization grouped into 16-bit blocks (`[63..48] [47..32] [31..16] [15..0]`), hex word representation (`0x...`), active bit index list, and bit density percentage bar.
 
 ---
 
