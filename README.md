@@ -65,7 +65,11 @@ Standard C (`<stdio.h>`) outputs plain, black-and-white text. **`AKP`** turns yo
 - 🌳 **Hierarchical Binary Tree Visualizer**: Horizontal branch layout (`┌──`, `│`, `└──`) for binary search trees and heaps.
 - 📐 **2D Function Plotter & Sparklines**: Rasterizes mathematical functions, complexity curves, and 8-level Unicode sparklines (` ▂▃▄▅▆▇█`).
 - 🎨 **2D Geometric Terminal Canvas**: In-terminal vector canvas drawing lines (Bresenham's algorithm), rectangles, circles, and text.
-- 🧪 **Micro Unit-Testing Framework**: Macro-based test suite (`AKP_TEST`, `AKP_ASSERT_EQ`) with pass-rate audits (79/79 passing).
+- 🔄 **Topological Sort & DAG Dependency Engine**: Kahn's in-degree BFS algorithm resolving execution pipelines (`[Step 1: V0] -> [Step 2: V1]`) and detecting circular deadlocks (`akp_toposort_render`).
+- 🌐 **Floyd-Warshall All-Pairs Shortest Path**: Dynamic programming matrix calculating all-pairs multi-hop routing, negative cycle detection, and vertex path reconstruction (`akp_floyd_render`).
+- 🔮 **Probabilistic Bloom Filter**: Multi-hash probabilistic set membership filter (FNV-1a + DJB2 double hashing), saturation fill gauge, and theoretical false positive probability telemetry (`akp_bloom_render`).
+- ⚡ **Linear Memory Arena Allocator**: High-performance contiguous bump allocator with 8-byte alignment, peak high-water mark tracking, and instant $O(1)$ memory reset (`akp_arena_render`).
+- 🧪 **Micro Unit-Testing Framework**: Macro-based test suite (`AKP_TEST`, `AKP_ASSERT_EQ`) with pass-rate audits (101/101 passing).
 - 🎬 **Real-Time Live Sorting Animator**: Watch Bubble, Selection, and Insertion sorts animate directly in your console with in-place frame redraws!
 - 💻 **Hardware Telemetry Dashboard**: Live CPU architecture, core count, total RAM, free RAM, and graphical memory gauge bar (`akp_sysinfo_render`).
 - 📋 **Interactive Form Wizard**: Bordered dialogs capturing multi-type user inputs (text, numbers, confirmation checks).

@@ -1,7 +1,7 @@
 # ⚡ AKP ENGINE: THE DEFINITIVE ARCHITECTURAL MANUAL
 ### *Master Documentation of the High-Performance Flashy C/C++ Toolkit*
 **Engineered & Authored by the Genius Architect: Akshar Miyani**  
-*AKP Studio Systems Architecture | Version 1.7.0 (Silent Audio Engine)*
+*AKP Studio Systems Architecture | Version 1.8.0 (Silent Audio Engine)*
 
 ---
 
@@ -25,9 +25,9 @@ Standard C (`<stdio.h>`) has remained visually static since 1972. In modern deve
 ```
 d:/Projects/AKP/
 ├── include/
-│   ├── akp.h                   # Standalone Amalgamated Master Header (v1.7.0)
+│   ├── akp.h                   # Standalone Amalgamated Master Header (v1.8.0)
 │   ├── akp.hpp                 # Modern C++17/20 STL & RAII Master Wrapper
-│   └── akp/                    # Modular Header Suite (36 Subsystems)
+│   └── akp/                    # Modular Header Suite (40 Subsystems)
 │       ├── akp.h               # Root Modular Umbrella Header
 │       ├── color.h             # 24-Bit TrueColor RGB, ANSI, Linear Gradients
 │       ├── banner.h            # ASCII Branding Splash & Lab Evaluation Stamp
@@ -63,7 +63,11 @@ d:/Projects/AKP/
 │       ├── disjoint_set.h      # Disjoint-Set Union-Find (DSU) & Set Partitions
 │       ├── kruskal.h           # Kruskal's Minimum Spanning Tree (MST) Visualizer
 │       ├── ring_buffer.h       # Lockless SPSC Circular Ring Buffer & Fill Gauge
-│       └── bitset.h            # Systems Bitset & 64-Bit Register Telemetry
+│       ├── bitset.h            # Systems Bitset & 64-Bit Register Telemetry
+│       ├── toposort.h          # Topological Sort & DAG Cycle Detection
+│       ├── floyd_warshall.h    # Floyd-Warshall All-Pairs Shortest Path Matrix
+│       ├── bloom_filter.h      # Probabilistic Bloom Filter & Saturation Telemetry
+│       └── arena.h             # Linear Memory Arena & Instant O(1) Reset
 ├── examples/
 │   ├── lab_demo.c              # Comprehensive C Lab Demonstration
 │   ├── cpp_demo.cpp            # Modern C++17 STL Benchmark & Visualizer
@@ -72,9 +76,10 @@ d:/Projects/AKP/
 │   ├── lab_showcase_v140.c     # v1.4.0 Showcase: Stack, Queue, Search, Graph
 │   ├── lab_showcase_v150.c     # v1.5.0 Showcase: Hash Table, Lists, Dijkstra, KMP
 │   ├── lab_showcase_v160.c     # v1.6.0 Showcase: Min-Heap, Trie, Huffman, LRU Cache
-│   └── lab_showcase_v170.c     # v1.7.0 Showcase: DSU, Kruskal MST, Ring Buffer, Bitset
+│   ├── lab_showcase_v170.c     # v1.7.0 Showcase: DSU, Kruskal MST, Ring Buffer, Bitset
+│   └── lab_showcase_v180.c     # v1.8.0 Showcase: TopoSort, Floyd-Warshall, Bloom, Arena
 ├── tests/
-│   └── test_suite.c            # Automated 79/79 Test Suite (100% Pass Rate)
+│   └── test_suite.c            # Automated 101/101 Test Suite (100% Pass Rate)
 ├── cmake/
 │   └── AKPConfig.cmake.in      # Modern CMake Package Export
 ├── ports/akp/                  # Official vcpkg Port Definition
@@ -535,6 +540,61 @@ Simulates low-level hardware registers, memory bitmasks, and CPU flags:
 - `bool akp_bitset_test(const akp_bitset_t* bs, size_t bit)`: Tests bit state.
 - `size_t akp_bitset_count(const akp_bitset_t* bs)`: Computes active high bits.
 - `void akp_bitset_render(const akp_bitset_t* bs, const char* title)`: Formats 64-bit quad-word binary layout partitioned into 4 nibble groups (`[63..48] [47..32] [31..16] [15..0]`), displays hexadecimal representation, list of set indices, and visual bit density ratio.
+
+---
+
+### 3.37. Topological Sort & DAG Dependency Resolution (`akp/toposort.h`)
+
+#### Internal Mechanism:
+Solves dependency ordering on Directed Acyclic Graphs (DAGs) and detects circular deadlocks:
+- Implements **Kahn's Algorithm** via in-degree array calculation and Breadth-First Search (BFS) queue.
+- Computes in-degree for all vertices $O(V + E)$. Enqueues all sources with in-degree 0.
+- Progressively consumes sources, recording linear topological resolution order `[Step 1: V0] ───> [Step 2: V1]` and decrementing neighbor in-degrees.
+- Detects circular dependencies: if resolved count $< V$, graph contains directed cycles.
+- `akp_toposort_result_t akp_toposort_solve(const akp_graph_t* g)`: Produces topological ordering array, resolved count, in-degree breakdown, and boolean cycle flag.
+- `void akp_toposort_render(const akp_graph_t* g, const akp_toposort_result_t* res, const char* title)`: Visualizes sequential execution pipeline and step order audit table.
+
+---
+
+### 3.38. Floyd-Warshall All-Pairs Shortest Path Matrix (`akp/floyd_warshall.h`)
+
+#### Internal Mechanism:
+Computes the shortest paths between all pairs of vertices in weighted directed graphs:
+- Implements classic dynamic programming formulation: $d_{ij}^{(k)} = \min\left(d_{ij}^{(k-1)}, d_{ik}^{(k-1)} + d_{kj}^{(k-1)}\right)$ in $O(V^3)$ time and $O(V^2)$ auxiliary space.
+- Simultaneously maintains next-hop predecessor routing matrix (`next[i][j]`) enabling complete vertex path reconstruction from any source $u$ to destination $v$.
+- Detects negative cycles when diagonal distances diverge ($d_{ii} < 0$).
+- `akp_floyd_result_t akp_floyd_solve(const akp_graph_t* g)`: Returns 2D distance grid and next-hop matrix.
+- `int akp_floyd_get_path(const akp_floyd_result_t* res, int u, int v, int* path_out)`: Reconstructs exact sequence of intermediate nodes.
+- `void akp_floyd_render(const akp_graph_t* g, const akp_floyd_result_t* res, const char* title)`: Renders 2D Cyberpunk all-pairs shortest path matrix grid.
+
+---
+
+### 3.39. Probabilistic Bloom Filter (`akp/bloom_filter.h`)
+
+#### Internal Mechanism:
+Space-efficient probabilistic set membership data structure:
+- Employs **Kirsch-Mitzenmacher Double Hashing**: generates $k$ independent hash locations using only two 32-bit hash passes (FNV-1a and DJB2): $g_i(x) = (h_1(x) + i \cdot h_2(x)) \pmod m$.
+- Guarantees **Zero False Negatives**: if `akp_bloom_check` returns `false`, element is guaranteed absent.
+- Quantifies and reports theoretical false positive probability rate: $p \approx (1 - e^{-kn/m})^k$.
+- `akp_bloom_t* akp_bloom_create(size_t bit_capacity, int num_hashes)`: Allocates dynamic bit vector.
+- `void akp_bloom_add(akp_bloom_t* bf, const char* key)`: Bitwise sets $k$ mapped hash bits.
+- `bool akp_bloom_check(const akp_bloom_t* bf, const char* key)`: Tests key membership.
+- `void akp_bloom_render(const akp_bloom_t* bf, const char* title)`: Displays bit capacity, byte size, saturation bar gauge, and raw bit array sample.
+
+---
+
+### 3.40. Linear Memory Arena Allocator (`akp/arena.h`)
+
+#### Internal Mechanism:
+High-performance contiguous bump / linear memory allocator designed for operating systems and game loops:
+- Pre-allocates a contiguous memory pool once, eliminating repeated heap fragmentation from individual `malloc` calls.
+- Enforces 8-byte pointer alignment via bitwise forward alignment: `(ptr + align - 1) & ~(align - 1)`.
+- Reclaims all scratch allocations in instant $O(1)$ time via `akp_arena_reset()`.
+- Tracks real-time offset, peak high-water mark, and active allocation counts.
+- `akp_arena_t* akp_arena_create(size_t capacity)`: Allocates scratch memory arena.
+- `void* akp_arena_alloc(akp_arena_t* arena, size_t size)`: Bumps offset forward and returns aligned pointer.
+- `void akp_arena_reset(akp_arena_t* arena)`: Instantly rewinds offset to 0.
+- `void akp_arena_render(const akp_arena_t* arena, const char* title)`: Renders ASCII memory map showing in-use blocks, free scratch space, and peak high-water mark indicator.
 
 ---
 

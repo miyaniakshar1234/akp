@@ -558,9 +558,116 @@ int main(void) {
 
 ---
 
+### 📌 Recipe 19: Topological Sort & Build Dependency Pipeline
+
+Resolving execution order and proving acyclic dependency flow in software build systems:
+
+```c
+#include "akp.h"
+
+int main(void) {
+    akp_banner();
+    akp_stamp("Practical Lab #23: Topological Sort & DAG Pipeline");
+
+    akp_graph_t* g = akp_graph_create(5, 1);
+    akp_graph_add_edge(g, 0, 1, 1); // Task 0 -> Task 1
+    akp_graph_add_edge(g, 0, 2, 1); // Task 0 -> Task 2
+    akp_graph_add_edge(g, 1, 3, 1); // Task 1 -> Task 3
+    akp_graph_add_edge(g, 2, 3, 1); // Task 2 -> Task 3
+    akp_graph_add_edge(g, 3, 4, 1); // Task 3 -> Task 4
+
+    akp_toposort_result_t res = akp_toposort_solve(g);
+    akp_toposort_render(g, &res, "Software Build & Release Pipeline");
+
+    akp_graph_free(g);
+    return 0;
+}
+```
+
+---
+
+### 📌 Recipe 20: Floyd-Warshall All-Pairs Shortest Path Matrix
+
+Visualizing the all-pairs multi-hop routing table in dynamic networks:
+
+```c
+#include "akp.h"
+
+int main(void) {
+    akp_banner();
+    akp_stamp("Practical Lab #24: Floyd-Warshall All-Pairs Shortest Path");
+
+    akp_graph_t* g = akp_graph_create(4, 1);
+    akp_graph_add_edge(g, 0, 1, 5);
+    akp_graph_add_edge(g, 0, 3, 10);
+    akp_graph_add_edge(g, 1, 2, 3);
+    akp_graph_add_edge(g, 2, 3, 1);
+
+    akp_floyd_result_t res = akp_floyd_solve(g);
+    akp_floyd_render(g, &res, "Inter-Campus Network Backbone");
+
+    akp_graph_free(g);
+    return 0;
+}
+```
+
+---
+
+### 📌 Recipe 21: Probabilistic Bloom Filter Fast Set Lookups
+
+Demonstrating zero-false-negative probabilistic caches (Cassandra / Bigtable style):
+
+```c
+#include "akp.h"
+
+int main(void) {
+    akp_banner();
+    akp_stamp("Practical Lab #25: Probabilistic Bloom Filter");
+
+    akp_bloom_t* bf = akp_bloom_create(256, 4);
+    akp_bloom_add(bf, "user:akshar");
+    akp_bloom_add(bf, "role:systems_architect");
+    akp_bloom_add(bf, "session:active");
+
+    akp_bloom_render(bf, "Distributed User Cache Ingress");
+
+    akp_bloom_destroy(bf);
+    return 0;
+}
+```
+
+---
+
+### 📌 Recipe 22: Linear Memory Arena & Scratch Frame Reclaim
+
+Replacing slow heap calls with high-performance linear bump allocation:
+
+```c
+#include "akp.h"
+
+int main(void) {
+    akp_banner();
+    akp_stamp("Practical Lab #26: Linear Scratch Memory Arena");
+
+    akp_arena_t* arena = akp_arena_create(1024);
+    void* buffer1 = akp_arena_alloc(arena, 128);
+    void* buffer2 = akp_arena_alloc(arena, 256);
+
+    akp_arena_render(arena, "Active Scratch Frame");
+
+    akp_arena_reset(arena); // Instant O(1) Reclaim!
+    akp_arena_render(arena, "Post-Reset Clean Frame");
+
+    akp_arena_destroy(arena);
+    return 0;
+}
+```
+
+---
+
 ## 🔇 4. Silent Audio Engine: Zero Lab Disruption (0dB Default)
 
-By default in AKP v1.7.0, **all audio functions are 100% silent (0dB)**:
+By default in AKP v1.8.0, **all audio functions are 100% silent (0dB)**:
 - Running lab tests, demos, and sorting visualizers produces **zero motherboard beeps or speaker noise**, ensuring you never disturb evaluators, professors, or peers in quiet computer labs.
 - All sound APIs (`akp_sound_coin()`, `akp_sound_victory()`, `akp_sound_alert()`, `akp_melody_tetris()`) remain safe, no-op calls.
 - If hardware audio is explicitly desired, simply add `#define AKP_ENABLE_AUDIO_HARDWARE 1` before `#include "akp.h"`.

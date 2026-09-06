@@ -7,7 +7,7 @@
  *  ██║  ██║██║ ╚██╗██║          ███████╗██║ ╚████║╚██████╔╝██║██║ ╚████║███████╗
  *  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝          ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝╚═╝  ╚═══╝╚══════╝
  * ============================================================================
- *  🚀 AKP CORE ENGINE v1.7.0 (Silent Audio Default)
+ *  🚀 AKP CORE ENGINE v1.8.0 (Silent Audio Default)
  *  Author: Akshar Miyani
  *  Identity: AKP Studio / Advanced C & C++ Flashy Development Toolkit
  *  Zero-Dependency | Pure C99/C11 & C++11/14/17/20 Compatible | Cross-Platform
@@ -3001,8 +3001,440 @@ static inline void akp_bitset_render(const akp_bitset_t* bs, const char* title) 
     printf("\n\n");
 }
 
+/* ============================================================================
+ * 37. VISUAL TOPOLOGICAL SORT & DAG CYCLE DETECTOR
+ * ============================================================================ */
+typedef struct {
+    int order[AKP_GRAPH_MAX_VERTICES];
+    int count;
+    bool has_cycle;
+    int indegree[AKP_GRAPH_MAX_VERTICES];
+} akp_toposort_result_t;
+
+static inline akp_toposort_result_t akp_toposort_solve(const akp_graph_t* g) {
+    akp_toposort_result_t res;
+    res.count = 0;
+    res.has_cycle = false;
+    if (!g || g->vertices <= 0) return res;
+
+    int n = g->vertices;
+    for (int i = 0; i < n; i++) {
+        res.indegree[i] = 0;
+        res.order[i] = -1;
+    }
+
+    for (int u = 0; u < n; u++) {
+        for (int v = 0; v < n; v++) {
+            if (g->adj[u][v] > 0) res.indegree[v]++;
+        }
+    }
+
+    int queue[AKP_GRAPH_MAX_VERTICES];
+    int front = 0, rear = 0;
+    int temp_indegree[AKP_GRAPH_MAX_VERTICES];
+    for (int i = 0; i < n; i++) {
+        temp_indegree[i] = res.indegree[i];
+        if (temp_indegree[i] == 0) queue[rear++] = i;
+    }
+
+    while (front < rear) {
+        int u = queue[front++];
+        res.order[res.count++] = u;
+        for (int v = 0; v < n; v++) {
+            if (g->adj[u][v] > 0) {
+                temp_indegree[v]--;
+                if (temp_indegree[v] == 0) queue[rear++] = v;
+            }
+        }
+    }
+
+    if (res.count < n) res.has_cycle = true;
+    return res;
+}
+
+static inline void akp_toposort_render(const akp_graph_t* g, const akp_toposort_result_t* res, const char* title) {
+    if (!g || !res) return;
+    akp_init_console();
+
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "╔═══════════════════════════════════════════════════════════════════════════════╗\n" AKP_RESET);
+    printf(AKP_BOLD AKP_NEON_CYAN "║  🔄 TOPOLOGICAL SORT & DEPENDENCY PIPELINE: %-33s ║\n" AKP_RESET, title ? title : "Task Dependency DAG");
+    printf(AKP_BOLD AKP_NEON_CYAN "╚═══════════════════════════════════════════════════════════════════════════════╝\n" AKP_RESET);
+
+    if (res->has_cycle) {
+        printf("  " AKP_BOLD AKP_NEON_RED "⛔ DEADLOCK DETECTED: Graph contains directed cyclic dependencies!\n" AKP_RESET);
+        printf("  Resolved Vertices: %d / %d (Cycle Trapped: %d)\n", res->count, g->vertices, g->vertices - res->count);
+        printf("  " AKP_DIM "↳ Topological ordering impossible due to circular dependency loops.\n\n" AKP_RESET);
+        return;
+    }
+
+    printf("  " AKP_BOLD AKP_NEON_GREEN "✔ VALID DIRECTED ACYCLIC GRAPH (DAG) RESOLVED\n" AKP_RESET);
+    printf("  Vertices Ordered: %d / %d  |  Algorithm: Kahn's In-Degree BFS (Time: O(V + E))\n\n", res->count, g->vertices);
+
+    printf(AKP_BOLD AKP_NEON_GOLD "  Sequential Execution Pipeline:\n    " AKP_RESET);
+    for (int i = 0; i < res->count; i++) {
+        printf(AKP_BOLD AKP_NEON_CYAN "[Step %02d: V%d]" AKP_RESET, i + 1, res->order[i]);
+        if (i < res->count - 1) printf(AKP_NEON_GREEN " ───> " AKP_RESET);
+    }
+    printf("\n\n");
+
+    printf("  ┌───────────────┬─────────────────┬───────────────────────┐\n");
+    printf("  │  Step Order   │  Vertex Index   │  Original In-Degree   │\n");
+    printf("  ├───────────────┼─────────────────┼───────────────────────┤\n");
+    for (int i = 0; i < res->count; i++) {
+        int v = res->order[i];
+        printf("  │    Step %2d    │     Node %2d     │         %3d           │\n",
+               i + 1, v, res->indegree[v]);
+    }
+    printf("  └───────────────┴─────────────────┴───────────────────────┘\n\n");
+}
+
+/* ============================================================================
+ * 38. VISUAL FLOYD-WARSHALL ALL-PAIRS SHORTEST PATH
+ * ============================================================================ */
+#define AKP_FLOYD_INF 999999
+
+typedef struct {
+    int vertices;
+    int dist[AKP_GRAPH_MAX_VERTICES][AKP_GRAPH_MAX_VERTICES];
+    int next[AKP_GRAPH_MAX_VERTICES][AKP_GRAPH_MAX_VERTICES];
+    bool has_negative_cycle;
+} akp_floyd_result_t;
+
+static inline akp_floyd_result_t akp_floyd_solve(const akp_graph_t* g) {
+    akp_floyd_result_t res;
+    res.vertices = g ? g->vertices : 0;
+    res.has_negative_cycle = false;
+    if (!g || g->vertices <= 0) return res;
+
+    int n = g->vertices;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i == j) {
+                res.dist[i][j] = 0;
+                res.next[i][j] = j;
+            } else if (g->adj[i][j] > 0) {
+                res.dist[i][j] = g->adj[i][j];
+                res.next[i][j] = j;
+            } else {
+                res.dist[i][j] = AKP_FLOYD_INF;
+                res.next[i][j] = -1;
+            }
+        }
+    }
+
+    for (int k = 0; k < n; k++) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (res.dist[i][k] != AKP_FLOYD_INF && res.dist[k][j] != AKP_FLOYD_INF) {
+                    if (res.dist[i][k] + res.dist[k][j] < res.dist[i][j]) {
+                        res.dist[i][j] = res.dist[i][k] + res.dist[k][j];
+                        res.next[i][j] = res.next[i][k];
+                    }
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < n; i++) {
+        if (res.dist[i][i] < 0) {
+            res.has_negative_cycle = true;
+            break;
+        }
+    }
+    return res;
+}
+
+static inline int akp_floyd_get_path(const akp_floyd_result_t* res, int u, int v, int* path_out) {
+    if (!res || !path_out || u < 0 || u >= res->vertices || v < 0 || v >= res->vertices) return 0;
+    if (res->dist[u][v] == AKP_FLOYD_INF) return 0;
+
+    int count = 0;
+    int curr = u;
+    path_out[count++] = curr;
+    while (curr != v) {
+        curr = res->next[curr][v];
+        if (curr == -1 || count >= AKP_GRAPH_MAX_VERTICES) return 0;
+        path_out[count++] = curr;
+    }
+    return count;
+}
+
+static inline void akp_floyd_render(const akp_graph_t* g, const akp_floyd_result_t* res, const char* title) {
+    if (!g || !res) return;
+    akp_init_console();
+
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "╔═══════════════════════════════════════════════════════════════════════════════╗\n" AKP_RESET);
+    printf(AKP_BOLD AKP_NEON_CYAN "║  🌐 FLOYD-WARSHALL ALL-PAIRS SHORTEST PATH MATRIX: %-25s ║\n" AKP_RESET, title ? title : "Network Routing Grid");
+    printf(AKP_BOLD AKP_NEON_CYAN "╚═══════════════════════════════════════════════════════════════════════════════╝\n" AKP_RESET);
+
+    if (res->has_negative_cycle) {
+        printf("  " AKP_BOLD AKP_NEON_RED "⛔ NEGATIVE CYCLE DETECTED: Path weights diverge to -infinity!\n\n" AKP_RESET);
+        return;
+    }
+
+    printf("  Vertices: %d | Time: O(V^3) | Space: O(V^2)\n\n", res->vertices);
+    printf("        ");
+    for (int j = 0; j < res->vertices; j++) printf(AKP_BOLD AKP_NEON_GOLD "  V%-2d  " AKP_RESET, j);
+    printf("\n");
+
+    for (int i = 0; i < res->vertices; i++) {
+        printf(AKP_BOLD AKP_NEON_GOLD "  V%-2d  " AKP_RESET AKP_BOLD "│" AKP_RESET, i);
+        for (int j = 0; j < res->vertices; j++) {
+            if (i == j) {
+                printf(AKP_DIM "    0  " AKP_RESET);
+            } else if (res->dist[i][j] == AKP_FLOYD_INF) {
+                printf(AKP_NEON_RED "   ∞   " AKP_RESET);
+            } else {
+                printf(AKP_BOLD AKP_NEON_GREEN "  %3d  " AKP_RESET, res->dist[i][j]);
+            }
+        }
+        printf(AKP_BOLD "│\n" AKP_RESET);
+    }
+    printf("\n");
+}
+
+/* ============================================================================
+ * 39. VISUAL PROBABILISTIC BLOOM FILTER
+ * ============================================================================ */
+typedef struct {
+    uint8_t* bits;
+    size_t bit_capacity;
+    size_t byte_count;
+    int num_hashes;
+    size_t items_added;
+} akp_bloom_t;
+
+static inline uint32_t akp_bloom_hash_fnv1a(const char* str) {
+    uint32_t hash = 2166136261u;
+    while (*str) {
+        hash ^= (uint8_t)(*str++);
+        hash *= 16777619u;
+    }
+    return hash;
+}
+
+static inline uint32_t akp_bloom_hash_djb2(const char* str) {
+    uint32_t hash = 5381;
+    while (*str) hash = ((hash << 5) + hash) + (uint8_t)(*str++);
+    return hash;
+}
+
+static inline akp_bloom_t* akp_bloom_create(size_t bit_capacity, int num_hashes) {
+    akp_init_console();
+    if (bit_capacity < 64) bit_capacity = 64;
+    if (num_hashes < 1) num_hashes = 1;
+    if (num_hashes > 8) num_hashes = 8;
+
+    akp_bloom_t* bf = (akp_bloom_t*)malloc(sizeof(akp_bloom_t));
+    if (!bf) return NULL;
+    bf->bit_capacity = bit_capacity;
+    bf->byte_count = (bit_capacity + 7) / 8;
+    bf->num_hashes = num_hashes;
+    bf->items_added = 0;
+    bf->bits = (uint8_t*)calloc(bf->byte_count, sizeof(uint8_t));
+    if (!bf->bits) {
+        free(bf);
+        return NULL;
+    }
+    return bf;
+}
+
+static inline void akp_bloom_destroy(akp_bloom_t* bf) {
+    if (bf) {
+        if (bf->bits) free(bf->bits);
+        free(bf);
+    }
+}
+
+static inline void akp_bloom_add(akp_bloom_t* bf, const char* key) {
+    if (!bf || !key) return;
+    uint32_t h1 = akp_bloom_hash_fnv1a(key);
+    uint32_t h2 = akp_bloom_hash_djb2(key);
+    for (int i = 0; i < bf->num_hashes; i++) {
+        uint32_t combined = h1 + (uint32_t)i * h2;
+        size_t bit_idx = combined % bf->bit_capacity;
+        bf->bits[bit_idx / 8] |= (1 << (bit_idx % 8));
+    }
+    bf->items_added++;
+}
+
+static inline bool akp_bloom_check(const akp_bloom_t* bf, const char* key) {
+    if (!bf || !key) return false;
+    uint32_t h1 = akp_bloom_hash_fnv1a(key);
+    uint32_t h2 = akp_bloom_hash_djb2(key);
+    for (int i = 0; i < bf->num_hashes; i++) {
+        uint32_t combined = h1 + (uint32_t)i * h2;
+        size_t bit_idx = combined % bf->bit_capacity;
+        if (!(bf->bits[bit_idx / 8] & (1 << (bit_idx % 8)))) return false;
+    }
+    return true;
+}
+
+static inline size_t akp_bloom_bits_set(const akp_bloom_t* bf) {
+    if (!bf) return 0;
+    size_t count = 0;
+    for (size_t i = 0; i < bf->byte_count; i++) {
+        uint8_t byte = bf->bits[i];
+        while (byte) {
+            count += (byte & 1);
+            byte >>= 1;
+        }
+    }
+    return count;
+}
+
+static inline double akp_bloom_est_false_positive(const akp_bloom_t* bf) {
+    if (!bf || bf->bit_capacity == 0) return 0.0;
+    double m = (double)bf->bit_capacity;
+    double k = (double)bf->num_hashes;
+    double n = (double)bf->items_added;
+    double exponent = -k * n / m;
+    double p = pow(1.0 - exp(exponent), k);
+    if (p < 0.0) p = 0.0;
+    if (p > 1.0) p = 1.0;
+    return p;
+}
+
+static inline void akp_bloom_render(const akp_bloom_t* bf, const char* title) {
+    if (!bf) return;
+    akp_init_console();
+    size_t set_bits = akp_bloom_bits_set(bf);
+    double fill_pct = (double)set_bits / (double)bf->bit_capacity * 100.0;
+    double fp_rate = akp_bloom_est_false_positive(bf) * 100.0;
+
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "╔═══════════════════════════════════════════════════════════════════════════════╗\n" AKP_RESET);
+    printf(AKP_BOLD AKP_NEON_CYAN "║  🔮 PROBABILISTIC BLOOM FILTER TELEMETRY: %-35s ║\n" AKP_RESET, title ? title : "Set Membership");
+    printf(AKP_BOLD AKP_NEON_CYAN "╚═══════════════════════════════════════════════════════════════════════════════╝\n" AKP_RESET);
+
+    printf("  Bit Capacity: %llu bits (%llu bytes)  |  Hash Functions (k): %d\n",
+           (unsigned long long)bf->bit_capacity, (unsigned long long)bf->byte_count, bf->num_hashes);
+    printf("  Items Ingested: %llu  |  Bits Set: %llu / %llu (%.1f%%)\n",
+           (unsigned long long)bf->items_added, (unsigned long long)set_bits, (unsigned long long)bf->bit_capacity, fill_pct);
+    printf("  Theoretical False-Positive Rate: " AKP_BOLD AKP_NEON_GOLD "%.3f%%\n\n" AKP_RESET, fp_rate);
+
+    printf("  Saturation Gauge: [");
+    int bar_width = 32;
+    int filled = (int)((fill_pct / 100.0) * bar_width);
+    for (int i = 0; i < bar_width; i++) {
+        if (i < filled) printf(AKP_BOLD AKP_NEON_GREEN "█" AKP_RESET);
+        else printf(AKP_DIM "░" AKP_RESET);
+    }
+    printf("] %.1f%%\n\n", fill_pct);
+
+    printf(AKP_BOLD AKP_NEON_PINK "  Bit Array Inspection (First 64 Bits):\n  " AKP_RESET);
+    size_t preview_bits = bf->bit_capacity < 64 ? bf->bit_capacity : 64;
+    for (size_t i = 0; i < preview_bits; i++) {
+        bool bit = (bf->bits[i / 8] & (1 << (i % 8))) != 0;
+        if (bit) printf(AKP_BOLD AKP_NEON_CYAN "1" AKP_RESET);
+        else printf(AKP_DIM "·" AKP_RESET);
+        if ((i + 1) % 8 == 0) printf(" ");
+        if ((i + 1) % 32 == 0 && i + 1 < preview_bits) printf("\n  ");
+    }
+    printf("\n\n");
+}
+
+/* ============================================================================
+ * 40. VISUAL LINEAR MEMORY ARENA ALLOCATOR
+ * ============================================================================ */
+#define AKP_ARENA_DEFAULT_ALIGNMENT 8
+
+typedef struct {
+    uint8_t* buffer;
+    size_t capacity;
+    size_t offset;
+    size_t peak_offset;
+    size_t alloc_count;
+} akp_arena_t;
+
+static inline size_t akp_arena_align_forward(size_t ptr, size_t align) {
+    return (ptr + align - 1) & ~(align - 1);
+}
+
+static inline akp_arena_t* akp_arena_create(size_t capacity) {
+    akp_init_console();
+    if (capacity < 128) capacity = 128;
+    akp_arena_t* arena = (akp_arena_t*)malloc(sizeof(akp_arena_t));
+    if (!arena) return NULL;
+    arena->capacity = capacity;
+    arena->offset = 0;
+    arena->peak_offset = 0;
+    arena->alloc_count = 0;
+    arena->buffer = (uint8_t*)malloc(capacity);
+    if (!arena->buffer) {
+        free(arena);
+        return NULL;
+    }
+    return arena;
+}
+
+static inline void akp_arena_destroy(akp_arena_t* arena) {
+    if (arena) {
+        if (arena->buffer) free(arena->buffer);
+        free(arena);
+    }
+}
+
+static inline void* akp_arena_alloc_aligned(akp_arena_t* arena, size_t size, size_t alignment) {
+    if (!arena || size == 0) return NULL;
+    size_t aligned_offset = akp_arena_align_forward(arena->offset, alignment);
+    if (aligned_offset + size > arena->capacity) return NULL;
+
+    void* ptr = (void*)(arena->buffer + aligned_offset);
+    arena->offset = aligned_offset + size;
+    arena->alloc_count++;
+    if (arena->offset > arena->peak_offset) arena->peak_offset = arena->offset;
+    return ptr;
+}
+
+static inline void* akp_arena_alloc(akp_arena_t* arena, size_t size) {
+    return akp_arena_alloc_aligned(arena, size, AKP_ARENA_DEFAULT_ALIGNMENT);
+}
+
+static inline void* akp_arena_alloc_zero(akp_arena_t* arena, size_t size) {
+    void* ptr = akp_arena_alloc(arena, size);
+    if (ptr) memset(ptr, 0, size);
+    return ptr;
+}
+
+static inline void akp_arena_reset(akp_arena_t* arena) {
+    if (arena) {
+        arena->offset = 0;
+        arena->alloc_count = 0;
+    }
+}
+
+static inline void akp_arena_render(const akp_arena_t* arena, const char* title) {
+    if (!arena) return;
+    akp_init_console();
+    double used_pct = (double)arena->offset / (double)arena->capacity * 100.0;
+    double peak_pct = (double)arena->peak_offset / (double)arena->capacity * 100.0;
+
+    printf("\n" AKP_BOLD AKP_NEON_CYAN "╔═══════════════════════════════════════════════════════════════════════════════╗\n" AKP_RESET);
+    printf(AKP_BOLD AKP_NEON_CYAN "║  ⚡ LINEAR MEMORY ARENA TELEMETRY: %-42s ║\n" AKP_RESET, title ? title : "Scratch Buffer Pool");
+    printf(AKP_BOLD AKP_NEON_CYAN "╚═══════════════════════════════════════════════════════════════════════════════╝\n" AKP_RESET);
+
+    printf("  Arena Capacity: %llu bytes (%.2f KB)  |  Active Allocations: %llu\n",
+           (unsigned long long)arena->capacity, (double)arena->capacity / 1024.0, (unsigned long long)arena->alloc_count);
+    printf("  Current Offset: %llu bytes (%.1f%%)  |  Peak High-Water Mark: %llu bytes (%.1f%%)\n",
+           (unsigned long long)arena->offset, used_pct, (unsigned long long)arena->peak_offset, peak_pct);
+
+    printf("\n  Memory Map: [");
+    int bar_width = 36;
+    int filled = (int)((used_pct / 100.0) * bar_width);
+    int peak_pos = (int)((peak_pct / 100.0) * bar_width);
+
+    for (int i = 0; i < bar_width; i++) {
+        if (i < filled) printf(AKP_BOLD AKP_NEON_GREEN "█" AKP_RESET);
+        else if (i == peak_pos && peak_pos > filled) printf(AKP_BOLD AKP_NEON_GOLD "▲" AKP_RESET);
+        else printf(AKP_DIM "░" AKP_RESET);
+    }
+    printf("] %.1f%% used\n", used_pct);
+    printf("  " AKP_DIM "↳ Legend: █ In-Use  ░ Free Scratch  ▲ Peak High-Water Mark\n\n" AKP_RESET);
+}
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* AKP_H */
+
